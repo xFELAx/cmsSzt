@@ -1,0 +1,56 @@
+\usepackage[left=2cm, right=2cm, bottom=3cm, top=3cm]{geometry}
+\usepackage[onehalfspacing]{setspace}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx} % Used to insert images
+\usepackage{float} %Package for using the [H] option on graphics to force them into place
+\usepackage{enumerate} % Needed for markdown enumerations to work
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage[nohyperlinks]{acronym}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[]{xcolor}
+\usepackage{footnote}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{todonotes}
+\usepackage{lipsum}
+\usepackage{attachfile2}
+\usepackage[polish]{babel}
+\bibliographystyle{ieeetr}
+\usepackage{lmodern}
+\usepackage{scrhack}
+\usepackage{listings}
+
+\pgfplotsset{compat=1.18}
+
+\setlength{\marginparwidth}{2cm}
+
+% ============= No massive space betweend headline and chapter titel =============
+\renewcommand*{\chapterheadstartvskip}{\vspace*{-.4cm}}
+\renewcommand*{\chapterheadendvskip}{\vspace{.5cm}}
+
+\setlength{\parindent}{0pt} % no indent at paragraph start
+
+% ============= Header and Footer =============
+\fancypagestyle{icmt-fancy}
+{
+  \fancyhf{}% Clear header and footer
+  \fancyhead[L]{\Title}
+  \fancyhead[C]{\Version}
+  \fancyhead[R]{\Date}
+  \fancyfoot[L]{Mikołaj Felczyński, Jakub Furs}
+  \fancyfoot[R]{\thepage}% Custom footer *~|~\pageref{LastPage}
+  \renewcommand{\headrulewidth}{0.4pt}% Line at the header visible
+  \renewcommand{\footrulewidth}{0.4pt}% Line at the footer visible
+}
+\renewcommand*{\chapterpagestyle}{icmt-fancy}
+
+% ============= Size of headings =============
+\setkomafont{chapter}{\LARGE}
+\setkomafont{section}{\Large}
+\setkomafont{subsection}{\large}
+\setkomafont{subsubsection}{\normalsize}
+\setkomafont{paragraph}{\normalsize}
+\setkomafont{subparagraph}{\small}
