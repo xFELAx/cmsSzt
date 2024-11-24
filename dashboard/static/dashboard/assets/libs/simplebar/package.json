@@ -41,7 +41,7 @@
     "simplebar": "file:"
   },
   "devDependencies": {
-    "css-loader": "^0.28.11",
+    "css-loader": "^7.1.2",
     "intern": "^4.4.2",
     "minify": "^3.0.5",
     "promise": "^8.0.2",
