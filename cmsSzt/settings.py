@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -55,7 +56,7 @@ ROOT_URLCONF = "cmsSzt.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "dashboard/templates/SEODash-main/src")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -128,6 +129,5 @@ LOGOUT_REDIRECT_URL = "/login/"
 
 STATICFILES_DIRS = [
     BASE_DIR / "dashboard" / "static" / "Mueller_1_0_0",
-    BASE_DIR / "dashboard" / "templates" / "Mueller_1_0_0" / "js",
-    BASE_DIR / "dashboard" / "templates" / "Mueller_1_0_0" / "images",
+    BASE_DIR / "dashboard" / "static" / "dashboard" / "assets",
 ]
