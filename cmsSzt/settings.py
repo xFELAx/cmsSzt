@@ -56,7 +56,10 @@ ROOT_URLCONF = "cmsSzt.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "dashboard/templates/SEODash-main/src")],
+        "DIRS": [
+            os.path.join(BASE_DIR, "dashboard/templates/SEODash-main/src"),
+            os.path.join(BASE_DIR, "dashboard/templates/Mueller_1_0_0"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -119,13 +122,16 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGIN_URL = "/authentication-login/"
 LOGIN_REDIRECT_URL = "/dashboard/"
-LOGOUT_REDIRECT_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/authentication-login/"
+
 
 STATICFILES_DIRS = [
     BASE_DIR / "dashboard" / "static" / "Mueller_1_0_0",

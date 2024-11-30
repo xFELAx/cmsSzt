@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SeoDash Free Bootstrap Admin Template by Adminmart</title>
+    <title>Login - SEODash Admin Template</title>
     <link
       rel="shortcut icon"
       type="image/png"
@@ -42,28 +42,37 @@
                     />
                   </a>
                   <p class="text-center">Your Social Campaigns</p>
-                  <form>
+                  <form method="post">
+                    {% csrf_token %} {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                      Your username and password didn't match. Please try again.
+                    </div>
+                    {% endif %}
                     <div class="mb-3">
-                      <label for="exampleInputEmail1" class="form-label"
+                      <label for="id_username" class="form-label"
                         >Username</label
                       >
                       <input
-                        type="email"
+                        type="text"
                         class="form-control"
-                        id="exampleInputEmail1"
-                        aria-describedby="emailHelp"
+                        id="id_username"
+                        name="username"
+                        required
                       />
                     </div>
                     <div class="mb-4">
-                      <label for="exampleInputPassword1" class="form-label"
+                      <label for="id_password" class="form-label"
                         >Password</label
                       >
                       <input
                         type="password"
                         class="form-control"
-                        id="exampleInputPassword1"
+                        id="id_password"
+                        name="password"
+                        required
                       />
                     </div>
+                    {% comment %}
                     <div
                       class="d-flex align-items-center justify-content-between mb-4"
                     >
@@ -71,32 +80,32 @@
                         <input
                           class="form-check-input primary"
                           type="checkbox"
-                          value=""
-                          id="flexCheckChecked"
-                          checked
+                          id="remember"
                         />
                         <label
                           class="form-check-label text-dark"
-                          for="flexCheckChecked"
+                          for="remember"
                         >
                           Remember this Device
                         </label>
                       </div>
                       <a
                         class="text-primary fw-bold"
-                        href="{% url 'dashboard' %}"
+                        href="{% url 'password_reset' %}"
                         >Forgot Password ?</a
                       >
                     </div>
-                    <a
-                      href="{% url 'dashboard' %}"
-                      class="btn btn-primary w-100 py-8 fs-4 mb-4"
-                      >Sign In</a
+                    {% endcomment %}
+                    <button
+                      type="submit"
+                      class="btn btn-primary w-100 py-8 fs-4 mb-4 rounded-2"
                     >
+                      Sign In
+                    </button>
                     <div
                       class="d-flex align-items-center justify-content-center"
                     >
-                      <p class="fs-4 mb-0 fw-bold">New to SeoDash?</p>
+                      <p class="fs-4 mb-0 fw-bold">New to SEODash?</p>
                       <a
                         class="text-primary fw-bold ms-2"
                         href="{% url 'authentication-register' %}"
@@ -113,6 +122,5 @@
     </div>
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
   </body>
 </html>

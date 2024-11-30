@@ -2,9 +2,14 @@ from django.shortcuts import render, redirect
 
 # Create your views here.
 from django.contrib.auth import login
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm
 from .models import Video
+
+from django.contrib.auth.forms import UserCreationForm
+from django.urls import reverse_lazy
+from django.views.generic import CreateView
 
 
 def home(request):
@@ -14,7 +19,8 @@ def home(request):
 
 @login_required
 def dashboard(request):
-    return render(request, "html/index.html")
+    print("Dashboard view accessed by:", request.user)  # Add this for debugging
+    return render(request, "SEODash-main/src/html/index.html")
 
 
 def ui_buttons(request):
@@ -45,9 +51,67 @@ def sample_page(request):
     return render(request, "SEODash-main/src/html/sample-page.html")
 
 
+from django.contrib.auth import login
+from django.shortcuts import render, redirect
+
+
 def authentication_register(request):
-    return render(request, "SEODash-main/src/html/authentication-register.html")
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # This should create and save the user
+            login(request, user)  # Automatically log in the user
+            print(f"User created successfully: {user.username}")  # Add debug print
+            return redirect("dashboard")
+        else:
+            print(f"Form errors: {form.errors}")  # Add debug print
+    else:
+        form = RegisterForm()
+
+    return render(
+        request, "SEODash-main/src/html/authentication-register.html", {"form": form}
+    )
 
 
 def authentication_login(request):
     return render(request, "SEODash-main/src/html/authentication-login.html")
+
+# Update your authentication_login view
+class CustomLoginView(LoginView):
+    template_name = "SEODash-main/src/html/authentication-login.html"
+    redirect_authenticated_user = True
+
+    def form_valid(self, form):
+        """Log in the user and redirect to dashboard"""
+        response = super().form_valid(form)
+        print("Authentication successful")
+        print(f"Redirecting to: {self.get_success_url()}")
+        return response
+
+    def form_invalid(self, form):
+        """Print form errors for debugging"""
+        print("Authentication failed:", form.errors)
+        return super().form_invalid(form)
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta(UserCreationForm.Meta):
+        fields = UserCreationForm.Meta.fields + ("email",)
+        
+class RegisterView(CreateView):
+    form_class = CustomUserCreationForm
+    template_name = "SEODash-main/src/html/authentication-register.html"
+    success_url = reverse_lazy("dashboard")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            return redirect("dashboard")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        login(self.request, self.object)  # Log the user in after registration
+        return response
+
+    def form_invalid(self, form):
+        print("Registration failed:", form.errors)  # For debugging
+        return super().form_invalid(form)

@@ -1,6 +1,9 @@
 from django.contrib import admin
 from django.urls import path, include  # Add include
 from dashboard import views
+from dashboard.views import CustomLoginView
+from django.contrib.auth.views import LogoutView
+from dashboard.views import RegisterView
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -18,10 +21,20 @@ urlpatterns = [
         views.authentication_register,
         name="authentication-register",
     ),
-    path(
-        "authentication-login/", views.authentication_login, name="authentication-login"
-    ),
     path("", views.home, name="home"),
     # Add Django's authentication URLs, which includes logout
     path("accounts/", include("django.contrib.auth.urls")),
+    path(
+        "authentication-login/", CustomLoginView.as_view(), name="authentication-login"
+    ),
+    path(
+        "logout/",
+        LogoutView.as_view(next_page="authentication-login"),
+        name="logout",
+    ),
+    path(
+        "authentication-register/",
+        RegisterView.as_view(),
+        name="authentication-register",
+    ),
 ]

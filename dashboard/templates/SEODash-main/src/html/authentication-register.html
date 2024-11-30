@@ -42,44 +42,64 @@
                     />
                   </a>
                   <p class="text-center">Your Social Campaigns</p>
-                  <form>
+                  <form method="post">
+                    {% csrf_token %}
+                    {% if form.errors %}
+                    <div class="alert alert-danger" role="alert">
+                      {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                          {{ error }}
+                        {% endfor %}
+                      {% endfor %}
+                    </div>
+                    {% endif %}
                     <div class="mb-3">
-                      <label for="exampleInputtext1" class="form-label"
-                        >Name</label
-                      >
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="exampleInputtext1"
-                        aria-describedby="textHelp"
-                      />
+                      <label for="{{ form.username.id_for_label }}" class="form-label">
+                        Username</label>
+                      <input type="text" name="username" class="form-control" id="{{ form.username.id_for_label }}" required>
                     </div>
                     <div class="mb-3">
-                      <label for="exampleInputEmail1" class="form-label"
+                      <label for="{{ form.email.id_for_label }}" class="form-label"
                         >Email Address</label
                       >
                       <input
                         type="email"
                         class="form-control"
-                        id="exampleInputEmail1"
-                        aria-describedby="emailHelp"
+                        id="{{ form.email.id_for_label }}"
+                        name="email"
+                        required
                       />
                     </div>
                     <div class="mb-4">
-                      <label for="exampleInputPassword1" class="form-label"
+                      <label for={{ form.password1.id_for_label }} class="form-label"
                         >Password</label
                       >
                       <input
                         type="password"
                         class="form-control"
-                        id="exampleInputPassword1"
+                        id="{{ form.password1.id_for_label }}"
+                        name="password1"
+                        required
                       />
                     </div>
-                    <a
-                      href="{% url 'dashboard' %}"
+                    <div class="mb-4">
+                      <label for="{{ form.password2.id_for_label }}" class="form-label"
+                        >Confirm Password</label
+                      >
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="{{ form.password2.id_for_label }}"
+                        name="password2"
+                        required
+                      />
+                    </div>
+                    <button
+                      type="submit"
                       class="btn btn-primary w-100 py-8 fs-4 mb-4"
-                      >Sign Up</a
                     >
+                      Sign Up
+                    </button>
                     <div
                       class="d-flex align-items-center justify-content-center"
                     >
