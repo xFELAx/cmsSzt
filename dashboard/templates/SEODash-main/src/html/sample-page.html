@@ -268,12 +268,14 @@
                   <i class="ti ti-menu-2"></i>
                 </a>
               </li>
+              {% comment %}
               <li class="nav-item">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)">
                   <i class="ti ti-bell-ringing"></i>
                   <div class="notification bg-primary rounded-circle"></div>
                 </a>
               </li>
+              {% endcomment %}
             </ul>
             <div
               class="navbar-collapse justify-content-end px-0"
@@ -311,6 +313,7 @@
                     aria-labelledby="drop2"
                   >
                     <div class="message-body">
+                      {% comment %}
                       <a
                         href="javascript:void(0)"
                         class="d-flex align-items-center gap-2 dropdown-item"
@@ -332,6 +335,7 @@
                         <i class="ti ti-list-check fs-6"></i>
                         <p class="mb-0 fs-3">My Task</p>
                       </a>
+                      {% endcomment %}
                       <a
                         href="{% url 'authentication-login' %}"
                         class="btn btn-outline-primary mx-3 mt-2 d-block"
@@ -345,34 +349,168 @@
           </nav>
         </header>
         <!--  Header End -->
+        {% if messages %}
         <div class="container-fluid">
-          <div class="card">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <div class="container-fluid">
+          <!-- Video List Section -->
+          <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title fw-semibold mb-4">Sample Page</h5>
-              <p class="mb-0">This is a sample page</p>
+              <h5 class="card-title fw-semibold">Videos</h5>
+
+              {% if videos %}
+              <div class="table-responsive">
+                <table class="table text-nowrap mb-0 align-middle">
+                  <thead class="text-dark fs-4">
+                    <tr>
+                      <th class="border-bottom-0">Title</th>
+                      <th class="border-bottom-0">URL</th>
+                      <th class="border-bottom-0">Status</th>
+                      <th class="border-bottom-0">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for video in videos %}
+                    <tr>
+                      <td>{{ video.title }}</td>
+                      <td>
+                        <a href="{{ video.url }}" target="_blank"
+                          >{{ video.url }}</a
+                        >
+                      </td>
+                      <td>
+                        {% if video.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <form
+                          method="post"
+                          action="{% url 'edit_video' video.id %}"
+                          class="d-inline"
+                        >
+                          {% csrf_token %}
+                          <input
+                            type="hidden"
+                            name="title"
+                            value="{{ video.title }}"
+                          />
+                          <input
+                            type="hidden"
+                            name="url"
+                            value="{{ video.url }}"
+                          />
+                          <input
+                            type="checkbox"
+                            name="is_active"
+                            {%
+                            if
+                            video.is_active
+                            %}checked{%
+                            endif
+                            %}
+                            onchange="this.form.submit()"
+                            style="display: none"
+                          />
+                          <button
+                            type="button"
+                            class="btn btn-sm {% if video.is_active %}btn-success{% else %}btn-secondary{% endif %}"
+                            onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
+                          >
+                            {% if video.is_active %} Active {% else %} Make
+                            Active {% endif %}
+                          </button>
+                        </form>
+                        <form
+                          method="post"
+                          action="{% url 'delete_video' video.id %}"
+                          class="d-inline"
+                        >
+                          {% csrf_token %}
+                          <button
+                            type="submit"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure?')"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+              <p class="text-muted">No videos available.</p>
+              {% endif %}
             </div>
           </div>
-          <div class="py-6 px-6 text-center">
-            <p class="mb-0 fs-4">
-              Design and Developed by
-              <a
-                href="https://adminmart.com/"
-                target="_blank"
-                class="pe-1 text-primary text-decoration-underline"
-                >AdminMart.com</a
-              >
-              Distributed by
-              <a
-                href="https://themewagon.com/"
-                target="_blank"
-                class="pe-1 text-primary text-decoration-underline"
-                >ThemeWagon</a
-              >
-            </p>
+
+          <!-- Add New Video Form -->
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title fw-semibold">Add New Video</h5>
+              <form method="post" action="{% url 'add_video' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="video_title" class="form-label"
+                    >Video Title</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="video_title"
+                    name="title"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="video_url" class="form-label">Video URL</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="video_url"
+                    name="url"
+                    required
+                  />
+                </div>
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="is_active"
+                    name="is_active"
+                  />
+                  <label class="form-check-label" for="is_active"
+                    >Set as active video</label
+                  >
+                </div>
+                <button type="submit" class="btn btn-primary">Add Video</button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
     </div>
+
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'libs/simplebar/dist/simplebar.js' %}"></script>

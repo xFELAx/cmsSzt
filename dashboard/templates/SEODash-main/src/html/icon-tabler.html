@@ -268,12 +268,14 @@
                   <i class="ti ti-menu-2"></i>
                 </a>
               </li>
+              {% comment %}
               <li class="nav-item">
                 <a class="nav-link nav-icon-hover" href="javascript:void(0)">
                   <i class="ti ti-bell-ringing"></i>
                   <div class="notification bg-primary rounded-circle"></div>
                 </a>
               </li>
+              {% endcomment %}
             </ul>
             <div
               class="navbar-collapse justify-content-end px-0"
@@ -311,6 +313,7 @@
                     aria-labelledby="drop2"
                   >
                     <div class="message-body">
+                      {% comment %}
                       <a
                         href="javascript:void(0)"
                         class="d-flex align-items-center gap-2 dropdown-item"
@@ -332,6 +335,7 @@
                         <i class="ti ti-list-check fs-6"></i>
                         <p class="mb-0 fs-3">My Task</p>
                       </a>
+                      {% endcomment %}
                       <a
                         href="{% url 'authentication-login' %}"
                         class="btn btn-outline-primary mx-3 mt-2 d-block"

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
 from django.contrib.auth import login
@@ -13,7 +13,7 @@ from django.views.generic import CreateView
 
 
 def home(request):
-    video = Video.objects.first()  # Assuming you have only one video
+    video = Video.objects.filter(is_active=True).first()
     return render(request, "Mueller_1_0_0/index.html", {"video": video})
 
 
@@ -47,12 +47,55 @@ def icon_tabler(request):
     return render(request, "SEODash-main/src/html/icon-tabler.html")
 
 
+@login_required
+def add_video(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        url = request.POST.get("url")
+        is_active = request.POST.get("is_active") == "on"
+
+        video = Video.objects.create(title=title, url=url, is_active=is_active)
+        video.save()
+    return redirect("sample-page")
+
+
+@login_required
+def edit_video(request, video_id):
+    video = get_object_or_404(Video, id=video_id)
+    if request.method == "POST":
+        title = request.POST.get("title")
+        url = request.POST.get("url")
+        is_active = request.POST.get("is_active") == "on"
+
+        video.title = title
+        video.url = url
+        video.is_active = is_active
+        video.save()
+
+    return redirect("sample-page")
+
+
+@login_required
+def delete_video(request, video_id):
+    video = get_object_or_404(Video, id=video_id)
+
+    if request.method == "POST":
+        title = video.title
+        video.delete()
+        print(f"Video deleted: {title}")  # For debugging
+
+    return redirect("sample-page")
+
+
+@login_required
 def sample_page(request):
-    return render(request, "SEODash-main/src/html/sample-page.html")
-
-
-from django.contrib.auth import login
-from django.shortcuts import render, redirect
+    videos = Video.objects.all()
+    active_video = Video.objects.filter(is_active=True).first()
+    return render(
+        request,
+        "SEODash-main/src/html/sample-page.html",
+        {"videos": videos, "active_video": active_video},
+    )
 
 
 def authentication_register(request):
@@ -76,6 +119,7 @@ def authentication_register(request):
 def authentication_login(request):
     return render(request, "SEODash-main/src/html/authentication-login.html")
 
+
 # Update your authentication_login view
 class CustomLoginView(LoginView):
     template_name = "SEODash-main/src/html/authentication-login.html"
@@ -93,10 +137,12 @@ class CustomLoginView(LoginView):
         print("Authentication failed:", form.errors)
         return super().form_invalid(form)
 
+
 class CustomUserCreationForm(UserCreationForm):
     class Meta(UserCreationForm.Meta):
         fields = UserCreationForm.Meta.fields + ("email",)
-        
+
+
 class RegisterView(CreateView):
     form_class = CustomUserCreationForm
     template_name = "SEODash-main/src/html/authentication-register.html"
