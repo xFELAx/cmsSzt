@@ -56,7 +56,7 @@ def add_video(request):
 
         video = Video.objects.create(title=title, url=url, is_active=is_active)
         video.save()
-    return redirect("sample-page")
+    return redirect("videos-page")
 
 
 @login_required
@@ -72,7 +72,7 @@ def edit_video(request, video_id):
         video.is_active = is_active
         video.save()
 
-    return redirect("sample-page")
+    return redirect("videos-page")
 
 
 @login_required
@@ -84,16 +84,16 @@ def delete_video(request, video_id):
         video.delete()
         print(f"Video deleted: {title}")  # For debugging
 
-    return redirect("sample-page")
+    return redirect("videos-page")
 
 
 @login_required
-def sample_page(request):
+def videos_page(request):
     videos = Video.objects.all()
     active_video = Video.objects.filter(is_active=True).first()
     return render(
         request,
-        "SEODash-main/src/html/sample-page.html",
+        "SEODash-main/src/html/videos-page.html",
         {"videos": videos, "active_video": active_video},
     )
 

@@ -15,7 +15,7 @@ urlpatterns = [
     path("dashboard/ui-forms/", views.ui_forms, name="ui-forms"),
     path("dashboard/ui-typography/", views.ui_typography, name="ui-typography"),
     path("dashboard/icon-tabler/", views.icon_tabler, name="icon-tabler"),
-    path("dashboard/sample-page/", views.sample_page, name="sample-page"),
+    path("dashboard/videos-page/", views.videos_page, name="videos-page"),
     path(
         "authentication-register/",
         views.authentication_register,
