@@ -37,7 +37,7 @@ urlpatterns = [
         RegisterView.as_view(),
         name="authentication-register",
     ),
-    path("add-video/", views.add_video, name="add_video"),
-    path("edit-video/<int:video_id>/", views.edit_video, name="edit_video"),
+    path("create-video/", views.create_video, name="create_video"),
+    path("update_video/<int:video_id>/", views.update_video, name="update_video"),
     path("delete-video/<int:video_id>/", views.delete_video, name="delete_video"),
 ]

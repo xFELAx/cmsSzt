@@ -1,17 +1,24 @@
 from django.db import models
+from django.utils import timezone
 
-# Create your models here.
 
 class Video(models.Model):
-    title = models.CharField(max_length=200)
-    url = models.URLField()
+    id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=False)
+    url = models.URLField(max_length=100)
+    last_edited_by = models.ForeignKey(
+        "auth.User", on_delete=models.CASCADE, related_name="edited_videos"
+    )
+    last_edited_date = models.DateTimeField(auto_now=True)  # Changed to auto_now
+
+    class Meta:
+        db_table = "videos"
+        constraints = [models.UniqueConstraint(fields=["id"], name="AK_6")]
 
     def save(self, *args, **kwargs):
-        # If this video is being set to active, deactivate all other videos
         if self.is_active:
             Video.objects.exclude(pk=self.pk).update(is_active=False)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.title
+        return f"Video {self.id} - {self.url}"

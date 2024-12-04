@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from .forms import RegisterForm
 from .models import Video
 
@@ -48,29 +49,37 @@ def icon_tabler(request):
 
 
 @login_required
-def add_video(request):
+def create_video(request):
     if request.method == "POST":
-        title = request.POST.get("title")
         url = request.POST.get("url")
-        is_active = request.POST.get("is_active") == "on"
+        is_active = request.POST.get("is_active", False)
 
-        video = Video.objects.create(title=title, url=url, is_active=is_active)
-        video.save()
-    return redirect("videos-page")
+        video = Video.objects.create(
+            url=url,
+            is_active=is_active == "on",  # Convert checkbox value to boolean
+            last_edited_by=request.user,
+            last_edited_date=timezone.now(),
+        )
+        return redirect("videos-page")
+
+    return render(request, "dashboard/videos-page.html")
 
 
 @login_required
-def edit_video(request, video_id):
+def update_video(request, video_id):
     video = get_object_or_404(Video, id=video_id)
     if request.method == "POST":
-        title = request.POST.get("title")
-        url = request.POST.get("url")
+        # Get the new values from the form
+        new_url = request.POST.get("url")
         is_active = request.POST.get("is_active") == "on"
 
-        video.title = title
-        video.url = url
+        # Update the video
+        video.url = new_url
         video.is_active = is_active
+        video.last_edited_by = request.user
+        video.last_edited_date = timezone.now()
         video.save()
+        return redirect("videos-page")
 
     return redirect("videos-page")
 
@@ -78,12 +87,7 @@ def edit_video(request, video_id):
 @login_required
 def delete_video(request, video_id):
     video = get_object_or_404(Video, id=video_id)
-
-    if request.method == "POST":
-        title = video.title
-        video.delete()
-        print(f"Video deleted: {title}")  # For debugging
-
+    video.delete()
     return redirect("videos-page")
 
 
