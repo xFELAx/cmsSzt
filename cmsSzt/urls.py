@@ -40,4 +40,18 @@ urlpatterns = [
     path("create-video/", views.create_video, name="create_video"),
     path("update_video/<int:video_id>/", views.update_video, name="update_video"),
     path("delete-video/<int:video_id>/", views.delete_video, name="delete_video"),
+    path(
+        "dashboard/social-medias/", views.social_medias_page, name="social-medias-page"
+    ),
+    path("create-social-media/", views.create_social_media, name="create_social_media"),
+    path(
+        "update-social-media/<int:social_media_id>/",
+        views.update_social_media,
+        name="update_social_media",
+    ),
+    path(
+        "delete-social-media/<int:social_media_id>/",
+        views.delete_social_media,
+        name="delete_social_media",
+    ),
 ]

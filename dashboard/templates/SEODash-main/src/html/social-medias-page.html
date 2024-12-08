@@ -352,7 +352,7 @@
                       </a>
                       {% endcomment %}
                       <a
-                        href="{% static 'authentication-login.html' %}"
+                        href="{% url 'authentication-login' %}"
                         class="btn btn-outline-primary mx-3 mt-2 d-block"
                         >Logout</a
                       >
@@ -364,85 +364,296 @@
           </nav>
         </header>
         <!--  Header End -->
+        {% if messages %}
         <div class="container-fluid">
-          <div class="card">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+            role="alert"
+          >
+            {{ message }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %} {% if form.errors %}
+        <div class="alert alert-danger">
+          {% for field, errors in form.errors.items %} {% for error in errors %}
+          <p>{{ field }}: {{ error }}</p>
+          {% endfor %} {% endfor %}
+        </div>
+        {% endif %}
+        <div class="container-fluid">
+          <!-- Video List Section -->
+          <div class="card mb-4">
             <div class="card-body">
-              <div class="row">
-                <div class="col-md-4">
-                  <h5 class="card-title fw-semibold mb-4">Card</h5>
-                  <div class="card">
-                    <img
-                      src="{% static 'images/products/s4.jpg' %}"
-                      class="card-img-top"
-                      alt="..."
-                    />
-                    <div class="card-body">
-                      <h5 class="card-title">Card title</h5>
-                      <p class="card-text">
-                        Some quick example text to build on the card title and
-                        make up the bulk of the card's content.
-                      </p>
-                      <a href="#" class="btn btn-primary">Go somewhere</a>
+              <h5 class="card-title fw-semibold">Social Media Links</h5>
+              <p class="text-muted mb-4">
+                Maximum 4 social media links allowed
+              </p>
+
+              {% if social_medias %}
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>Icon SVG</th>
+                      <th>Link</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for social in social_medias %}
+                    <tr>
+                      <td>{{ social.order_number }}</td>
+                      <td>
+                        <div style="max-width: 200px; overflow: hidden">
+                          {{ social.icon|truncatechars:50 }}
+                        </div>
+                      </td>
+                      <td>{{ social.link }}</td>
+                      <td>
+                        <form
+                          method="post"
+                          action="{% url 'update_social_media' social.id %}"
+                        >
+                          {% csrf_token %}
+                          <input
+                            type="hidden"
+                            name="icon"
+                            value="{{ social.icon }}"
+                          />
+                          <input
+                            type="hidden"
+                            name="link"
+                            value="{{ social.link }}"
+                          />
+                          <input
+                            type="hidden"
+                            name="order_number"
+                            value="{{ social.order_number }}"
+                          />
+                          <input
+                            type="checkbox"
+                            name="is_active"
+                            {%
+                            if
+                            social.is_active
+                            %}checked{%
+                            endif
+                            %}
+                            onchange="this.form.submit()"
+                            style="display: none"
+                          />
+                          <button
+                            type="button"
+                            class="btn btn-sm {% if social.is_active %}btn-success{% else %}btn-secondary{% endif %}"
+                            onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
+                          >
+                            {% if social.is_active %}Active{% else %}Make
+                            Active{% endif %}
+                          </button>
+                        </form>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#editModal{{ social.id }}"
+                        >
+                          Edit
+                        </button>
+                        <form
+                          method="post"
+                          action="{% url 'delete_social_media' social.id %}"
+                          class="d-inline"
+                        >
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-danger btn-sm">
+                            Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+
+                    <!-- Edit Modal -->
+                    <div
+                      class="modal fade"
+                      id="editModal{{ social.id }}"
+                      tabindex="-1"
+                    >
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5 class="modal-title">Edit Social Media Link</h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                            ></button>
+                          </div>
+                          <form
+                            method="post"
+                            action="{% url 'update_social_media' social.id %}"
+                          >
+                            {% csrf_token %}
+                            <div class="modal-body">
+                              <div class="form-group mb-3">
+                                <label for="order_number{{ social.id }}"
+                                  >Order Number (1-4)</label
+                                >
+                                <input
+                                  type="number"
+                                  class="form-control"
+                                  id="order_number{{ social.id }}"
+                                  name="order_number"
+                                  value="{{ social.order_number }}"
+                                  required
+                                  min="1"
+                                  max="4"
+                                />
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="icon{{ social.id }}"
+                                  >Icon SVG</label
+                                >
+                                <textarea
+                                  class="form-control"
+                                  id="icon{{ social.id }}"
+                                  name="icon"
+                                  required
+                                  rows="3"
+                                >
+{{ social.icon }}</textarea
+                                >
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="link{{ social.id }}">Link</label>
+                                <input
+                                  type="url"
+                                  class="form-control"
+                                  id="link{{ social.id }}"
+                                  name="link"
+                                  value="{{ social.link }}"
+                                  required
+                                />
+                              </div>
+                              <div class="form-check">
+                                <input
+                                  type="checkbox"
+                                  class="form-check-input"
+                                  id="is_active{{ social.id }}"
+                                  name="is_active"
+                                  {%
+                                  if
+                                  social.is_active
+                                  %}checked{%
+                                  endif
+                                  %}
+                                />
+                                <label
+                                  class="form-check-label"
+                                  for="is_active{{ social.id }}"
+                                >
+                                  Active
+                                </label>
+                              </div>
+                            </div>
+                            <div class="modal-footer">
+                              <button
+                                type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                              >
+                                Close
+                              </button>
+                              <button type="submit" class="btn btn-primary">
+                                Save changes
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <h5 class="card-title fw-semibold mb-4">Header and footer</h5>
-                  <div class="card">
-                    <div class="card-header">Featured</div>
-                    <div class="card-body">
-                      <h5 class="card-title">Special title treatment</h5>
-                      <p class="card-text">
-                        With supporting text below as a natural lead-in to
-                        additional content.
-                      </p>
-                      <a href="#" class="btn btn-primary">Go somewhere</a>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <h5 class="card-title fw-semibold mb-4">
-                    Titles, text, and links
-                  </h5>
-                  <div class="card">
-                    <div class="card-body">
-                      <h5 class="card-title">Card title</h5>
-                      <h6 class="card-subtitle mb-2 text-muted">
-                        Card subtitle
-                      </h6>
-                      <p class="card-text">
-                        Some quick example text to build on the card title and
-                        make up the bulk of the card's content.
-                      </p>
-                      <a href="#" class="card-link">Card link</a>
-                      <a href="#" class="card-link">Another link</a>
-                    </div>
-                  </div>
-                </div>
+                    {% endfor %}
+                  </tbody>
+                </table>
               </div>
+              {% else %}
+              <p class="text-muted">No social media links available.</p>
+              {% endif %}
             </div>
           </div>
-          <div class="py-6 px-6 text-center">
-            <p class="mb-0 fs-4">
-              Design and Developed by
-              <a
-                href="https://adminmart.com/"
-                target="_blank"
-                class="pe-1 text-primary text-decoration-underline"
-                >AdminMart.com</a
-              >
-              Distributed by
-              <a
-                href="https://themewagon.com/"
-                target="_blank"
-                class="pe-1 text-primary text-decoration-underline"
-                >ThemeWagon</a
-              >
-            </p>
+
+          <!-- Add New Social Media Form -->
+          {% if social_medias.count < 4 %}
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title fw-semibold">Add New Social Media Link</h5>
+              <form method="post" action="{% url 'create_social_media' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                  <label for="order_number" class="form-label"
+                    >Order Number (1-4)</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="order_number"
+                    name="order_number"
+                    required
+                    min="1"
+                    max="4"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="icon" class="form-label">Icon SVG</label>
+                  <textarea
+                    class="form-control"
+                    id="icon"
+                    name="icon"
+                    required
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="link" class="form-label">Link</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="link"
+                    name="link"
+                    required
+                  />
+                </div>
+                <div class="mb-3 form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    id="is_active"
+                    name="is_active"
+                  />
+                  <label class="form-check-label" for="is_active">Active</label>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Add Social Media
+                </button>
+              </form>
+            </div>
           </div>
+          {% endif %}
         </div>
       </div>
     </div>
+
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'libs/simplebar/dist/simplebar.js' %}"></script>

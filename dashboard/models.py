@@ -22,3 +22,25 @@ class Video(models.Model):
 
     def __str__(self):
         return f"Video {self.id} - {self.url}"
+
+
+class SocialMedia(models.Model):
+    id = models.AutoField(primary_key=True)
+    icon = models.CharField(max_length=100000)
+    link = models.URLField(max_length=100)
+    last_edited_by = models.ForeignKey(
+        "auth.User", on_delete=models.CASCADE, related_name="edited_socials"
+    )
+    last_edited_date = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=False)
+    order_number = models.SmallIntegerField(null=False, unique=True)
+
+    class Meta:
+        ordering = ["order_number"]
+        db_table = "social_medias"
+        constraints = [
+            models.UniqueConstraint(fields=["id"], name="AK_7"),
+            models.UniqueConstraint(
+                fields=["order_number"], name="unique_order_number"
+            ),
+        ]
