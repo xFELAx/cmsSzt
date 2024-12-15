@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>SeoDash Free Bootstrap Admin Template by Adminmart</title>
+    <title>Sections Management - SEODash</title>
     <link
       rel="shortcut icon"
       type="image/png"
@@ -407,19 +407,17 @@
           <!-- Video List Section -->
           <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title fw-semibold">Social Media Links</h5>
-              <p class="text-muted mb-4">
-                Maximum 4 social media links allowed
-              </p>
+              <h5 class="card-title fw-semibold">Sections Management</h5>
 
-              {% if social_medias %}
+              {% if sections %}
               <div class="table-responsive">
                 <table class="table">
                   <thead>
                     <tr>
                       <th>Order</th>
-                      <th>Icon SVG</th>
-                      <th>Link</th>
+                      <th>Label</th>
+                      <th>Name</th>
+                      <th>Text Lines</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
                       <th>Status</th>
@@ -427,44 +425,45 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for social in social_medias %}
+                    {% for section in sections %}
                     <tr>
-                      <td>{{ social.order_number }}</td>
+                      <td>{{ section.order_number }}</td>
+                      <td>{{ section.label }}</td>
+                      <td>{{ section.name }}</td>
                       <td>
-                        <div style="max-width: 200px; overflow: hidden">
-                          {{ social.icon|truncatechars:50 }}
-                        </div>
+                        {% for text_line in section.text_lines.all %}
+                        <div class="mb-1">{{ text_line.content }}</div>
+                        {% endfor %}
                       </td>
-                      <td>{{ social.link }}</td>
                       <td>{{ social.last_edited_by.username }}</td>
                       <td>{{ social.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
                         <form
                           method="post"
-                          action="{% url 'update_social_media' social.id %}"
+                          action="{% url 'update_section' section.id %}"
                         >
                           {% csrf_token %}
                           <input
                             type="hidden"
-                            name="icon"
-                            value="{{ social.icon }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="link"
-                            value="{{ social.link }}"
-                          />
-                          <input
-                            type="hidden"
                             name="order_number"
-                            value="{{ social.order_number }}"
+                            value="{{ section.order_number }}"
+                          />
+                          <input
+                            type="hidden"
+                            name="name"
+                            value="{{ section.name }}"
+                          />
+                          <input
+                            type="hidden"
+                            name="label"
+                            value="{{ section.label }}"
                           />
                           <input
                             type="checkbox"
                             name="is_active"
                             {%
                             if
-                            social.is_active
+                            section.is_active
                             %}checked{%
                             endif
                             %}
@@ -473,10 +472,10 @@
                           />
                           <button
                             type="button"
-                            class="btn btn-sm {% if social.is_active %}btn-success{% else %}btn-secondary{% endif %}"
+                            class="btn btn-sm {% if section.is_active %}btn-success{% else %}btn-secondary{% endif %}"
                             onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
                           >
-                            {% if social.is_active %}Active{% else %}Make
+                            {% if section.is_active %}Active{% else %}Make
                             Active{% endif %}
                           </button>
                         </form>
@@ -486,13 +485,13 @@
                           type="button"
                           class="btn btn-primary btn-sm"
                           data-bs-toggle="modal"
-                          data-bs-target="#editModal{{ social.id }}"
+                          data-bs-target="#editModal{{ section.id }}"
                         >
                           Edit
                         </button>
                         <form
                           method="post"
-                          action="{% url 'delete_social_media' social.id %}"
+                          action="{% url 'delete_section' section.id %}"
                           class="d-inline"
                         >
                           {% csrf_token %}
@@ -506,13 +505,13 @@
                     <!-- Edit Modal -->
                     <div
                       class="modal fade"
-                      id="editModal{{ social.id }}"
+                      id="editModal{{ section.id }}"
                       tabindex="-1"
                     >
-                      <div class="modal-dialog">
+                      <div class="modal-dialog modal-lg">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h5 class="modal-title">Edit Social Media Link</h5>
+                            <h5 class="modal-title">Edit Section</h5>
                             <button
                               type="button"
                               class="btn-close"
@@ -521,69 +520,107 @@
                           </div>
                           <form
                             method="post"
-                            action="{% url 'update_social_media' social.id %}"
+                            action="{% url 'update_section' section.id %}"
                           >
                             {% csrf_token %}
                             <div class="modal-body">
                               <div class="form-group mb-3">
-                                <label for="order_number{{ social.id }}"
-                                  >Order Number (1-4)</label
+                                <label for="order_number{{ section.id }}"
+                                  >Order Number</label
                                 >
                                 <input
                                   type="number"
                                   class="form-control"
-                                  id="order_number{{ social.id }}"
+                                  id="order_number{{ section.id }}"
                                   name="order_number"
-                                  value="{{ social.order_number }}"
+                                  value="{{ section.order_number }}"
                                   required
-                                  min="1"
-                                  max="4"
                                 />
                               </div>
                               <div class="form-group mb-3">
-                                <label for="icon{{ social.id }}"
-                                  >Icon SVG</label
+                                <label for="name{{ section.id }}">Name</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  id="name{{ section.id }}"
+                                  name="name"
+                                  value="{{ section.name }}"
+                                  required
+                                />
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="label{{ section.id }}">Label</label>
+                                <input
+                                  type="text"
+                                  class="form-control"
+                                  id="label{{ section.id }}"
+                                  name="label"
+                                  value="{{ section.label }}"
+                                  required
+                                  maxlength="10"
+                                />
+                              </div>
+                              <div class="form-group mb-3">
+                                <label>Text Lines</label>
+                                <div id="textLines{{ section.id }}">
+                                  {% for text_line in section.text_lines.all %}
+                                  <div class="input-group mb-2">
+                                    <input
+                                      type="text"
+                                      class="form-control"
+                                      name="text_lines[]"
+                                      value="{{ text_line.content }}"
+                                      required
+                                    />
+                                    <button
+                                      type="button"
+                                      class="btn btn-danger"
+                                      onclick="this.parentElement.remove()"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                  {% endfor %}
+                                </div>
+                                <button
+                                  type="button"
+                                  class="btn btn-secondary btn-sm"
+                                  onclick="addTextLine('textLines{{ section.id }}')"
+                                >
+                                  Add Text Line
+                                </button>
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="content{{ section.id }}"
+                                  >Content</label
                                 >
                                 <textarea
                                   class="form-control"
-                                  id="icon{{ social.id }}"
-                                  name="icon"
-                                  required
-                                  rows="3"
+                                  id="content{{ section.id }}"
+                                  name="content"
+                                  rows="5"
                                 >
-{{ social.icon }}</textarea
+{{ section.content }}</textarea
                                 >
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="link{{ social.id }}">Link</label>
-                                <input
-                                  type="url"
-                                  class="form-control"
-                                  id="link{{ social.id }}"
-                                  name="link"
-                                  value="{{ social.link }}"
-                                  required
-                                />
                               </div>
                               <div class="form-check">
                                 <input
                                   type="checkbox"
                                   class="form-check-input"
-                                  id="is_active{{ social.id }}"
+                                  id="is_active{{ section.id }}"
                                   name="is_active"
                                   {%
                                   if
-                                  social.is_active
+                                  section.is_active
                                   %}checked{%
                                   endif
                                   %}
                                 />
                                 <label
                                   class="form-check-label"
-                                  for="is_active{{ social.id }}"
+                                  for="is_active{{ section.id }}"
+                                  >Active</label
                                 >
-                                  Active
-                                </label>
                               </div>
                             </div>
                             <div class="modal-footer">
@@ -607,71 +644,129 @@
                 </table>
               </div>
               {% else %}
-              <p class="text-muted">No social media links available.</p>
+              <p class="text-muted">No sections available.</p>
               {% endif %}
-            </div>
-          </div>
 
-          <!-- Add New Social Media Form -->
-          {% if social_medias.count < 4 %}
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title fw-semibold">Add New Social Media Link</h5>
-              <form method="post" action="{% url 'create_social_media' %}">
-                {% csrf_token %}
-                <div class="mb-3">
-                  <label for="order_number" class="form-label"
-                    >Order Number (1-4)</label
-                  >
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="order_number"
-                    name="order_number"
-                    required
-                    min="1"
-                    max="4"
-                  />
+              <!-- Add New Section Button -->
+              {% if sections|length < 5 %}
+              <button
+                type="button"
+                class="btn btn-primary mt-3"
+                data-bs-toggle="modal"
+                data-bs-target="#addNewModal"
+              >
+                Add New Section
+              </button>
+              {% endif %}
+
+              <!-- Add New Section Modal -->
+              <div class="modal fade" id="addNewModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Add New</h5>
+                      <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                      ></button>
+                    </div>
+                    <form method="post" action="{% url 'create_section' %}">
+                      {% csrf_token %}
+                      <div class="modal-body">
+                        <div class="form-group mb-3">
+                          <label for="order_number">Order Number</label>
+                          <input
+                            type="number"
+                            class="form-control"
+                            id="order_number"
+                            name="order_number"
+                            required
+                          />
+                        </div>
+                        <div class="form-group mb-3">
+                          <label for="name">Name</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="name"
+                            name="name"
+                            required
+                          />
+                        </div>
+                        <div class="form-group mb-3">
+                          <label for="label">Label</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            id="label"
+                            name="label"
+                            required
+                            maxlength="10"
+                          />
+                        </div>
+                        <div class="form-group mb-3">
+                          <label for="content">Content</label>
+                          <textarea
+                            class="form-control"
+                            id="content"
+                            name="content"
+                            rows="5"
+                          ></textarea>
+                        </div>
+                        <div class="form-check">
+                          <input
+                            type="checkbox"
+                            class="form-check-input"
+                            id="is_active"
+                            name="is_active"
+                          />
+                          <label class="form-check-label" for="is_active"
+                            >Active</label
+                          >
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          data-bs-dismiss="modal"
+                        >
+                          Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                          Create Section
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-                <div class="mb-3">
-                  <label for="icon" class="form-label">Icon SVG</label>
-                  <textarea
-                    class="form-control"
-                    id="icon"
-                    name="icon"
-                    required
-                    rows="3"
-                  ></textarea>
-                </div>
-                <div class="mb-3">
-                  <label for="link" class="form-label">Link</label>
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="link"
-                    name="link"
-                    required
-                  />
-                </div>
-                <div class="mb-3 form-check">
-                  <input
-                    type="checkbox"
-                    class="form-check-input"
-                    id="is_active"
-                    name="is_active"
-                  />
-                  <label class="form-check-label" for="is_active">Active</label>
-                </div>
-                <button type="submit" class="btn btn-primary">
-                  Add Social Media
-                </button>
-              </form>
+              </div>
             </div>
           </div>
-          {% endif %}
         </div>
       </div>
     </div>
+
+    <script>
+      function addTextLine(containerId) {
+        const container = document.getElementById(containerId);
+        const newLine = document.createElement("div");
+        newLine.className = "input-group mb-2";
+        newLine.innerHTML = `
+          <input type="text" 
+                class="form-control" 
+                name="text_lines[]" 
+                required>
+          <button type="button" 
+                  class="btn btn-danger" 
+                  onclick="this.parentElement.remove()">
+            Remove
+          </button>
+        `;
+        container.appendChild(newLine);
+      }
+    </script>
 
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>

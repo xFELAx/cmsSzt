@@ -6,7 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Video, SocialMedia
+from .models import Section, TextLine, Video, SocialMedia
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -15,13 +15,19 @@ from django import forms
 from django.contrib import messages
 from django.db import IntegrityError
 
+
 def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
+
 
 def home(request):
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
-    return render(request, "Mueller_1_0_0/index.html", {"video": video, "social_medias": social_medias})
+    return render(
+        request,
+        "Mueller_1_0_0/index.html",
+        {"video": video, "social_medias": social_medias},
+    )
 
 
 @login_required
@@ -106,10 +112,6 @@ def videos_page(request):
         "SEODash-main/src/html/videos-page.html",
         {"videos": videos, "active_video": active_video},
     )
-    
-
-    
-
 
 
 class SocialMediaForm(forms.ModelForm):
@@ -119,7 +121,7 @@ class SocialMediaForm(forms.ModelForm):
 
     def clean_order_number(self):
         order_number = self.cleaned_data.get("order_number")
-        
+
         # Validate order number range
         if order_number is not None and (order_number < 1 or order_number > 4):
             raise forms.ValidationError("Order number must be between 1 and 4.")
@@ -138,6 +140,7 @@ class SocialMediaForm(forms.ModelForm):
 
         return order_number
 
+
 @login_required
 def social_medias_page(request):
     social_medias = SocialMedia.objects.all().order_by("order_number")
@@ -147,6 +150,7 @@ def social_medias_page(request):
         "SEODash-main/src/html/social-medias-page.html",
         {"social_medias": social_medias, "form": form},
     )
+
 
 @login_required
 def create_social_media(request):
@@ -208,6 +212,75 @@ def delete_social_media(request, social_media_id):
     except Exception as e:
         messages.error(request, f"Error deleting social media link: {str(e)}")
     return redirect("social-medias-page")
+
+
+@login_required
+def sections_page(request):
+    sections = Section.objects.all().order_by("order_number")
+    return render(
+        request, "SEODash-main/src/html/sections-page.html", {"sections": sections}
+    )
+
+
+@login_required
+def create_section(request):
+    if request.method == "POST":
+        try:
+            section = Section.objects.create(
+                name=request.POST.get("name"),
+                label=request.POST.get("label"),
+                content=request.POST.get("content"),
+                order_number=request.POST.get("order_number"),
+                is_active=request.POST.get("is_active") == "on",
+                last_edited_by=request.user,
+                last_edited_date=timezone.now(),
+            )
+            messages.success(request, "Section created successfully.")
+        except Exception as e:
+            messages.error(request, f"Error creating section: {str(e)}")
+    return redirect("sections_page")
+
+
+@login_required
+def update_section(request, section_id):
+    section = get_object_or_404(Section, id=section_id)
+    if request.method == "POST":
+        try:
+            section.name = request.POST.get("name")
+            section.label = request.POST.get("label")
+            section.content = request.POST.get("content")
+            section.order_number = request.POST.get("order_number")
+            section.is_active = request.POST.get("is_active") == "on"
+            section.last_edited_by = request.user
+            section.last_edited_date = timezone.now()
+            section.save()
+
+            # Handle text lines
+            # First, delete existing text lines
+            section.text_lines.all().delete()
+
+            # Then create new ones from the form data
+            text_lines = request.POST.getlist("text_lines[]")
+            for text_line in text_lines:
+                if text_line.strip():  # Only create if not empty
+                    TextLine.objects.create(section=section, content=text_line.strip())
+
+            messages.success(request, "Section and text lines updated successfully.")
+        except Exception as e:
+            messages.error(request, f"Error updating section: {str(e)}")
+    return redirect("sections_page")
+
+
+@login_required
+def delete_section(request, section_id):
+    section = get_object_or_404(Section, id=section_id)
+    if request.method == "POST":
+        try:
+            section.delete()
+            messages.success(request, "Section deleted successfully.")
+        except Exception as e:
+            messages.error(request, f"Error deleting section: {str(e)}")
+    return redirect("sections_page")
 
 
 def authentication_register(request):
