@@ -405,6 +405,8 @@
                       <th>Order</th>
                       <th>Icon SVG</th>
                       <th>Link</th>
+                      <th>Last Edited By</th>
+                      <th>Last Edited Date</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
@@ -419,6 +421,8 @@
                         </div>
                       </td>
                       <td>{{ social.link }}</td>
+                      <td>{{ social.last_edited_by.username }}</td>
+                      <td>{{ social.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
                         <form
                           method="post"

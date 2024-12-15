@@ -395,9 +395,9 @@
                     <tr>
                       <th>ID</th>
                       <th>URL</th>
-                      <th>Active</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -406,7 +406,6 @@
                     <tr>
                       <td>{{ video.id }}</td>
                       <td>{{ video.url }}</td>
-                      <td>{{ video.is_active|yesno:"Yes,No" }}</td>
                       <td>{{ video.last_edited_by.username }}</td>
                       <td>{{ video.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
@@ -447,7 +446,9 @@
                             Active {% endif %}
                           </button>
                         </form>
+                        </td
                         <!-- Edit Button that triggers modal -->
+                        <td>
                         <button
                           type="button"
                           class="btn btn-primary btn-sm"
