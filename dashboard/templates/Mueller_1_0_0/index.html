@@ -94,8 +94,13 @@
 
       <!-- # site-content================================================== -->
       <section id="content" class="s-content">
+        {% for section in sections %}
         <!-- intro----------------------------------------------- -->
-        <section id="intro" class="s-intro target-section">
+        <section
+          id="{{ section.label|lower }}"
+          class="s-{{ section.label|lower }} target-section"
+        >
+          {% if section.label == 'intro' %}
           <div class="s-intro__bg"></div>
 
           <div class="row s-intro__content">
@@ -103,17 +108,22 @@
 
             <div class="column lg-12 s-intro__content-inner">
               <h1 class="s-intro__content-title">
-                We provide creative <br />
-                solutions to turn your <br />
-                ideas into digital reality.
+                {% for text_line in section.text_lines.all|slice:":3" %}
+                  {{ text_line.content|safe }}{% if not forloop.last %}<br />{% endif %}
+                {% endfor %}
               </h1>
 
               <div class="s-intro__content-buttons">
-                <a
-                  href="#download"
-                  class="btn btn--stroke s-intro__content-btn smoothscroll"
-                  >More About Us</a
-                >
+                {% for text_line in section.text_lines.all|slice:":4" %}
+                  {% if forloop.counter == 4 %}
+                    <a
+                      href="#download"
+                      class="btn btn--stroke s-intro__content-btn smoothscroll"
+                    >
+                      {{ text_line.content|safe }}
+                    </a>
+                  {% endif %}
+                {% endfor %}
                 <a href="{{ video.url }}" class="s-intro__content-video-btn">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -137,28 +147,36 @@
             </a>
           </div>
           <!-- s-intro__scroll-down -->
-        </section>
-        <!-- end s-intro -->
+          <!-- end s-intro -->
 
-        <!-- about            ----------------------------------------------- -->
-        <section id="about" class="s-about target-section">
+          <!-- about            ----------------------------------------------- -->
+          {% elif section.label == 'about' %}
           <div class="row section-header" data-num="01">
             <h3
               class="column lg-12 section-header__pretitle pretitle text-pretitle"
             >
-              Who We Are
+              {{ section.name }}
             </h3>
             <div class="column lg-6 stack-on-1100 section-header__primary">
               <h2 class="title text-display-1">
-                Mueller is a branding agency based in Somewhere. We shape brand
-                identities and design thoughtful digital experiences.
+                {% for text_line in section.text_lines.all|slice:":2" %}
+                  {{ text_line.content }}{% if not forloop.last %}<br />{% endif %}
+                {% endfor %}
               </h2>
             </div>
             <div class="column lg-6 stack-on-1100 section-header__secondary">
               <p class="desc">
-                Deleniti dolorem reiciendis repellat labore velit dolor nihil
-                qui. Deserunt sapiente odio quos quisquam dolorem cumque et
-                omnis. Minima quibusdam sequi consequatur magni non sunt est.
+                {% for text_line in section.text_lines %}
+                  {% if text_line.order_number == 3 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 4 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 5 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                {% endfor %}
               </p>
             </div>
           </div>
@@ -169,15 +187,28 @@
           >
             <div class="column list-block__item">
               <div class="list-block__title">
-                <h3 class="h5">Define</h3>
+                <h3 class="h5">{{ text_line.content }}{% if text_line.order_number == 6 %}{% endif %}
+                </h3>
               </div>
               <div class="list-block__text">
                 <p>
-                  Nemo cupiditate ab quibusdam quaerat impedit magni. Earum
-                  suscipit ipsum laudantium. Quo delectus est. Maiores voluptas
-                  ab sit natus veritatis ut. Debitis nulla cumque veritatis.
-                  Sunt suscipit voluptas ipsa in tempora esse soluta sint
-                  aliquam rhoncus elit.
+                {% for text_line in section.text_lines %}
+                  {% if text_line.order_number == 7 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 8 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 9 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 10 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 11 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                {% endfor %}
                 </p>
               </div>
             </div>
@@ -185,15 +216,29 @@
 
             <div class="column list-block__item">
               <div class="list-block__title">
-                <h3 class="h5">Design</h3>
+                <h3 class="h5">
+                  {{ text_line.content }}{% if text_line.order_number == 12 %}{% endif %}
+                </h3>
               </div>
               <div class="list-block__text">
                 <p>
-                  Quibusdam quis autem voluptatibus earum vel ex error ea magni.
-                  Rerum quam quos. Aut asperiores sit mollitia. Rem neque et
-                  voluptatem eos quia sed eligendi et. Eaque velit eligendi ut
-                  magnam. Cumque ducimus laborum doloribus facere maxime vel
-                  earum quidem enim suscipit.
+                {% for text_line in section.text_lines %}
+                  {% if text_line.order_number == 13 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 14 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 15 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 16 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 17 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                {% endfor %}
                 </p>
               </div>
             </div>
@@ -201,15 +246,29 @@
 
             <div class="column list-block__item">
               <div class="list-block__title">
-                <h3 class="h5">Build</h3>
+                <h3 class="h5">
+                  {{ text_line.content }}{% if text_line.order_number == 18 %}{% endif %}
+                </h3>
               </div>
               <div class="list-block__text">
                 <p>
-                  Non ullam est vel facere et. Qui iusto optio nostrum corrupti
-                  et dignissimos. Ipsam ipsam expedita aspernatur eos harum quo
-                  atque tempore non. Magni saepe hic fuga cumque. Nihil itaque
-                  laborum doloribus minus dolorum sint itaque animi et
-                  voluptatem. illum nemo rerum voluptate.
+                {% for text_line in section.text_lines %}
+                  {% if text_line.order_number == 19 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 20 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 21 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 22 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 23 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                {% endfor %}
                 </p>
               </div>
             </div>
@@ -217,26 +276,39 @@
 
             <div class="column list-block__item">
               <div class="list-block__title">
-                <h3 class="h5">Launch</h3>
+                <h3 class="h5">
+                  {{ text_line.content }}{% if text_line.order_number == 24 %}{% endif %}
+                </h3>
               </div>
               <div class="list-block__text">
                 <p>
-                  Nobis mollitia quo nulla sunt sit error repellat qui.
-                  Praesentium minima consequatur. Aliquid aliquid aut.
-                  Asperiores sed temporibus laboriosam delectus optio rerum
-                  reiciendis. Quas at illum. Dolores itaque architecto. Magnam
-                  voluptatem aperiam. Velit omnis est.
+                {% for text_line in section.text_lines %}
+                  {% if text_line.order_number == 25 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 26 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 27 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 28 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                  {% if text_line.order_number == 29 %}
+                    {{ text_line.content }}
+                  {% endif %}
+                {% endfor %}
                 </p>
               </div>
             </div>
             <!-- end list-block__item -->
           </div>
           <!-- end process-list -->
-        </section>
-        <!-- end s-about -->
+          <!-- end s-about -->
 
-        <!-- services            ----------------------------------------------- -->
-        <section id="services" class="s-services target-section">
+          <!-- services            ----------------------------------------------- -->
+          {% elif section.label == 'services' %}
           <div class="row section-header" data-num="02">
             <h3 class="column lg-12 section-header__pretitle text-pretitle">
               What We Do
@@ -436,11 +508,10 @@
             <!-- end list-block__item -->
           </div>
           <!-- end process-list -->
-        </section>
-        <!-- end s-services -->
+          <!-- end s-services -->
 
-        <!-- portfolio            ----------------------------------------------- -->
-        <section id="folio" class="s-folio target-section">
+          <!-- portfolio            ----------------------------------------------- -->
+          {% elif section.label == 'folio' %}
           <div class="row section-header light-on-dark" data-num="03">
             <h3 class="column lg-12 section-header__pretitle text-pretitle">
               Recent Works
@@ -806,12 +877,11 @@
             <!-- end column lg-12 -->
           </div>
           <!-- end s-clients -->
-        </section>
-        <!-- end s-folio -->
+          <!-- end s-folio -->
 
-        <!-- testimonials
+          <!-- testimonials
             ----------------------------------------------- -->
-        <section id="testimonials" class="s-testimonials">
+          {% elif section.label == 'testimonials' %}
           <div class="row s-testimonials__content">
             <div class="column lg-12">
               <div class="swiper-container s-testimonials__slider">
@@ -913,8 +983,10 @@
             <!-- end column -->
           </div>
           <!-- end s-testimonials__content -->
+          {% endif %}
         </section>
         <!-- end testimonials -->
+        {% endfor %}
       </section>
       <!-- end content -->
 

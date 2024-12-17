@@ -521,6 +521,14 @@
                           <form
                             method="post"
                             action="{% url 'update_section' section.id %}"
+                            onsubmit="
+                              const formData = new FormData(this);
+                              console.log('Form submitted:');
+                              for (let [key, value] of formData.entries()) {
+                                  console.log(`${key}: ${value}`);
+                              }
+                              return true;
+                            "
                           >
                             {% csrf_token %}
                             <div class="modal-body">
@@ -754,17 +762,13 @@
         const newLine = document.createElement("div");
         newLine.className = "input-group mb-2";
         newLine.innerHTML = `
-          <input type="text" 
-                class="form-control" 
-                name="text_lines[]" 
-                required>
-          <button type="button" 
-                  class="btn btn-danger" 
-                  onclick="this.parentElement.remove()">
-            Remove
-          </button>
+            <input type="text" class="form-control" name="text_lines[]" required>
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">
+              Remove
+            </button>
         `;
         container.appendChild(newLine);
+        console.log(container.innerHTML);
       }
     </script>
 

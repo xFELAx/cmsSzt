@@ -45,6 +45,7 @@ class SocialMedia(models.Model):
             ),
         ]
 
+
 class Section(models.Model):
     id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=False)

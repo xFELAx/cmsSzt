@@ -21,12 +21,13 @@ def get_active_social_media():
 
 
 def home(request):
+    sections = Section.objects.filter(is_active=True).order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
     return render(
         request,
         "Mueller_1_0_0/index.html",
-        {"video": video, "social_medias": social_medias},
+        {"sections": sections, "video": video, "social_medias": social_medias},
     )
 
 
@@ -238,7 +239,7 @@ def create_section(request):
             messages.success(request, "Section created successfully.")
         except Exception as e:
             messages.error(request, f"Error creating section: {str(e)}")
-    return redirect("sections_page")
+    return redirect("sections-page")
 
 
 @login_required
@@ -246,6 +247,11 @@ def update_section(request, section_id):
     section = get_object_or_404(Section, id=section_id)
     if request.method == "POST":
         try:
+            # Debug print to see what's being received
+            print("Received POST data:", request.POST)
+            text_lines = request.POST.getlist("text_lines[]")
+            print("Text lines received:", text_lines)
+
             section.name = request.POST.get("name")
             section.label = request.POST.get("label")
             section.content = request.POST.get("content")
@@ -253,22 +259,24 @@ def update_section(request, section_id):
             section.is_active = request.POST.get("is_active") == "on"
             section.last_edited_by = request.user
             section.last_edited_date = timezone.now()
+
+            # Save section first
             section.save()
 
-            # Handle text lines
-            # First, delete existing text lines
-            section.text_lines.all().delete()
+            # Delete existing text lines
+            TextLine.objects.filter(section=section).delete()
 
-            # Then create new ones from the form data
-            text_lines = request.POST.getlist("text_lines[]")
+            # Create new text lines
             for text_line in text_lines:
-                if text_line.strip():  # Only create if not empty
+                if text_line.strip():
                     TextLine.objects.create(section=section, content=text_line.strip())
+                    print(f"Created text line: {text_line.strip()}")
 
-            messages.success(request, "Section and text lines updated successfully.")
+            messages.success(request, "Section updated successfully.")
         except Exception as e:
+            print(f"Error updating section: {str(e)}")  # Debug print
             messages.error(request, f"Error updating section: {str(e)}")
-    return redirect("sections_page")
+    return redirect("sections-page")
 
 
 @login_required
@@ -280,7 +288,7 @@ def delete_section(request, section_id):
             messages.success(request, "Section deleted successfully.")
         except Exception as e:
             messages.error(request, f"Error deleting section: {str(e)}")
-    return redirect("sections_page")
+    return redirect("sections-page")
 
 
 def authentication_register(request):
