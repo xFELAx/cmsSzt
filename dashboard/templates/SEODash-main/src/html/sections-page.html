@@ -15,6 +15,8 @@
       href="{% static 'libs/simplebar/dist/simplebar.min.css' %}"
     />
     <link rel="stylesheet" href="{% static 'css/styles.min.css' %}" />
+    <!-- Place the first <script> tag in your HTML's <head> -->
+    <script src="https://cdn.tiny.cloud/1/qsmb6cjdzto1k92zakcewrfeh2hsu9opiuql5fn3mjfl8f9m/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
   </head>
 
   <body>
@@ -417,7 +419,6 @@
                       <th>Order</th>
                       <th>Label</th>
                       <th>Name</th>
-                      <th>Text Lines</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
                       <th>Status</th>
@@ -430,11 +431,6 @@
                       <td>{{ section.order_number }}</td>
                       <td>{{ section.label }}</td>
                       <td>{{ section.name }}</td>
-                      <td>
-                        {% for text_line in section.text_lines.all %}
-                        <div class="mb-1">{{ text_line.content }}</div>
-                        {% endfor %}
-                      </td>
                       <td>{{ social.last_edited_by.username }}</td>
                       <td>{{ social.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
@@ -561,27 +557,9 @@
                                 />
                               </div>
                               <div class="form-group mb-3">
-                                <label>Text Lines</label>
-                                <div id="textLines{{ section.id }}">
-                                  {% for text_line in section.text_lines.all %}
-                                  <div class="input-group mb-2">
-                                    <input
-                                      type="text"
-                                      class="form-control"
-                                      name="text_lines[]"
-                                      value="{{ text_line.content }}"
-                                      required
-                                    />
-                                    <button
-                                      type="button"
-                                      class="btn btn-danger"
-                                      onclick="this.parentElement.remove()"
-                                    >
-                                      Remove
-                                    </button>
-                                  </div>
-                                  {% endfor %}
-                                </div>
+                                  <label>Content</label>
+                                  <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
+                              </div>
                                 <button
                                   type="button"
                                   class="btn btn-secondary btn-sm"
@@ -590,37 +568,10 @@
                                   Add Text Line
                                 </button>
                               </div>
-                              <div class="form-group mb-3">
-                                <label for="content{{ section.id }}"
-                                  >Content</label
-                                >
-                                <textarea
-                                  class="form-control"
-                                  id="content{{ section.id }}"
-                                  name="content"
-                                  rows="5"
-                                >
-{{ section.content }}</textarea
-                                >
-                              </div>
-                              <div class="form-check">
-                                <input
-                                  type="checkbox"
-                                  class="form-check-input"
-                                  id="is_active{{ section.id }}"
-                                  name="is_active"
-                                  {%
-                                  if
-                                  section.is_active
-                                  %}checked{%
-                                  endif
-                                  %}
-                                />
-                                <label
-                                  class="form-check-label"
-                                  for="is_active{{ section.id }}"
-                                  >Active</label
-                                >
+                              <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="is_active{{ section.id }}"
+                                  name="is_active" {% if section.is_active %}checked{% endif %}/>
+                                <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
                               </div>
                             </div>
                             <div class="modal-footer">
@@ -706,13 +657,8 @@
                           />
                         </div>
                         <div class="form-group mb-3">
-                          <label for="content">Content</label>
-                          <textarea
-                            class="form-control"
-                            id="content"
-                            name="content"
-                            rows="5"
-                          ></textarea>
+                                  <label>Content</label>
+                                  <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
                         </div>
                         <div class="form-check">
                           <input
@@ -748,24 +694,22 @@
       </div>
     </div>
 
+    <!-- Initialize TinyMCE -->
     <script>
-      function addTextLine(containerId) {
-        const container = document.getElementById(containerId);
-        const newLine = document.createElement("div");
-        newLine.className = "input-group mb-2";
-        newLine.innerHTML = `
-          <input type="text" 
-                class="form-control" 
-                name="text_lines[]" 
-                required>
-          <button type="button" 
-                  class="btn btn-danger" 
-                  onclick="this.parentElement.remove()">
-            Remove
-          </button>
-        `;
-        container.appendChild(newLine);
-      }
+        tinymce.init({
+            selector: '.tinymce-editor',
+            height: 300,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+                'bold italic forecolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+        });
     </script>
 
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>

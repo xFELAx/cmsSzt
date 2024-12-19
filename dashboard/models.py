@@ -51,7 +51,7 @@ class Section(models.Model):
     order_number = models.SmallIntegerField(null=False)
     name = models.CharField(max_length=30, null=False)
     label = models.CharField(max_length=10, null=False)
-    content = models.TextField(null=True, blank=True)
+    content = models.TextField(blank=True)
     last_edited_by = models.ForeignKey(
         "auth.User", on_delete=models.CASCADE, related_name="edited_sections"
     )
@@ -68,17 +68,3 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.label})"
-
-
-class TextLine(models.Model):
-    id = models.AutoField(primary_key=True)
-    content = models.CharField(max_length=255, null=False)
-    section = models.ForeignKey(
-        Section, on_delete=models.CASCADE, related_name="text_lines"
-    )
-
-    class Meta:
-        db_table = "text_lines"
-
-    def __str__(self):
-        return f"Text line for section: {self.section.name}"

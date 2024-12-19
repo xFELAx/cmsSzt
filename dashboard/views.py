@@ -6,7 +6,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Section, TextLine, Video, SocialMedia
+from .models import Section, Video, SocialMedia
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -255,17 +255,7 @@ def update_section(request, section_id):
             section.last_edited_date = timezone.now()
             section.save()
 
-            # Handle text lines
-            # First, delete existing text lines
-            section.text_lines.all().delete()
-
-            # Then create new ones from the form data
-            text_lines = request.POST.getlist("text_lines[]")
-            for text_line in text_lines:
-                if text_line.strip():  # Only create if not empty
-                    TextLine.objects.create(section=section, content=text_line.strip())
-
-            messages.success(request, "Section and text lines updated successfully.")
+            messages.success(request, "Section updated successfully.")
         except Exception as e:
             messages.error(request, f"Error updating section: {str(e)}")
     return redirect("sections_page")
