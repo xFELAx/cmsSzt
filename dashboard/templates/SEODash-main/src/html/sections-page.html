@@ -1,4 +1,5 @@
 {% load static %}
+{% load section_filters %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -431,164 +432,196 @@
                       <td>{{ section.order_number }}</td>
                       <td>{{ section.label }}</td>
                       <td>{{ section.name }}</td>
-                      <td>{{ social.last_edited_by.username }}</td>
-                      <td>{{ social.last_edited_date|date:"Y-m-d H:i" }}</td>
+                      <td>{{ section.last_edited_by.username }}</td>
+                      <td>{{ section.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
-                        <form
-                          method="post"
-                          action="{% url 'update_section' section.id %}"
-                        >
-                          {% csrf_token %}
-                          <input
-                            type="hidden"
-                            name="order_number"
-                            value="{{ section.order_number }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="name"
-                            value="{{ section.name }}"
-                          />
-                          <input
-                            type="hidden"
-                            name="label"
-                            value="{{ section.label }}"
-                          />
-                          <input
-                            type="checkbox"
-                            name="is_active"
-                            {%
-                            if
-                            section.is_active
-                            %}checked{%
-                            endif
-                            %}
-                            onchange="this.form.submit()"
-                            style="display: none"
-                          />
-                          <button
-                            type="button"
-                            class="btn btn-sm {% if section.is_active %}btn-success{% else %}btn-secondary{% endif %}"
-                            onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
-                          >
-                            {% if section.is_active %}Active{% else %}Make
-                            Active{% endif %}
-                          </button>
-                        </form>
+                          {% if section.name == 'intro' %}
+                              <!-- Intro section is always active -->
+                              <button type="button" class="btn btn-sm btn-success" disabled>
+                                  Always Active
+                              </button>
+                          {% else %}
+                              <!-- Status toggle for non-intro sections -->
+                              <form method="post" action="{% url 'update_section' section.id %}">
+                                  {% csrf_token %}
+                                  <input type="hidden" name="order_number" value="{{ section.order_number }}" />
+                                  <input type="hidden" name="name" value="{{ section.name }}" />
+                                  <input type="hidden" name="label" value="{{ section.label }}" />
+                                  <input
+                                      type="checkbox"
+                                      name="is_active"
+                                      {% if section.is_active %}checked{% endif %}
+                                      onchange="this.form.submit()"
+                                      style="display: none"
+                                  />
+                                  <button
+                                      type="button"
+                                      class="btn btn-sm {% if section.is_active %}btn-success{% else %}btn-secondary{% endif %}"
+                                      onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
+                                  >
+                                      {% if section.is_active %}Active{% else %}Make Active{% endif %}
+                                  </button>
+                              </form>
+                          {% endif %}
                       </td>
                       <td>
-                        <button
-                          type="button"
-                          class="btn btn-primary btn-sm"
-                          data-bs-toggle="modal"
-                          data-bs-target="#editModal{{ section.id }}"
-                        >
-                          Edit
-                        </button>
-                        <form
-                          method="post"
-                          action="{% url 'delete_section' section.id %}"
-                          class="d-inline"
-                        >
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-danger btn-sm">
-                            Delete
+                          <!-- Edit button always shows -->
+                          <button
+                              type="button"
+                              class="btn btn-primary btn-sm"
+                              data-bs-toggle="modal"
+                              data-bs-target="#editModal{{ section.id }}"
+                          >
+                              Edit
                           </button>
-                        </form>
+                          
+                          <!-- Delete button only shows for non-intro sections -->
+                          {% if section.name != 'intro' %}
+                              <form
+                                  method="post"
+                                  action="{% url 'delete_section' section.id %}"
+                                  class="d-inline"
+                              >
+                                  {% csrf_token %}
+                                  <button type="submit" class="btn btn-danger btn-sm">
+                                      Delete
+                                  </button>
+                              </form>
+                          {% endif %}
                       </td>
                     </tr>
 
+
                     <!-- Edit Modal -->
-                    <div
-                      class="modal fade"
-                      id="editModal{{ section.id }}"
-                      tabindex="-1"
-                    >
-                      <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5 class="modal-title">Edit Section</h5>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                            ></button>
-                          </div>
-                          <form
-                            method="post"
-                            action="{% url 'update_section' section.id %}"
-                          >
-                            {% csrf_token %}
-                            <div class="modal-body">
-                              <div class="form-group mb-3">
-                                <label for="order_number{{ section.id }}"
-                                  >Order Number</label
-                                >
-                                <input
-                                  type="number"
-                                  class="form-control"
-                                  id="order_number{{ section.id }}"
-                                  name="order_number"
-                                  value="{{ section.order_number }}"
-                                  required
-                                />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="name{{ section.id }}">Name</label>
-                                <input
-                                  type="text"
-                                  class="form-control"
-                                  id="name{{ section.id }}"
-                                  name="name"
-                                  value="{{ section.name }}"
-                                  required
-                                />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="label{{ section.id }}">Label</label>
-                                <input
-                                  type="text"
-                                  class="form-control"
-                                  id="label{{ section.id }}"
-                                  name="label"
-                                  value="{{ section.label }}"
-                                  required
-                                  maxlength="10"
-                                />
-                              </div>
-                              <div class="form-group mb-3">
-                                  <label>Content</label>
-                                  <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
-                              </div>
-                                <button
-                                  type="button"
-                                  class="btn btn-secondary btn-sm"
-                                  onclick="addTextLine('textLines{{ section.id }}')"
-                                >
-                                  Add Text Line
-                                </button>
-                              </div>
-                              <div class="form-check mb-3">
-                                <input type="checkbox" class="form-check-input" id="is_active{{ section.id }}"
-                                  name="is_active" {% if section.is_active %}checked{% endif %}/>
-                                <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
-                              </div>
+                    <div class="modal fade" id="editModal{{ section.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">
+                                            Edit Section
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="post" action="{% url 'update_section' section.id %}">
+                                    {% csrf_token %}
+                                    <div class="modal-body">
+                                        {% if section.name == 'intro' %}
+                                            <!-- For intro section, only show content field -->
+                                            <input type="hidden" name="order_number" value="{{ section.order_number }}" />
+                                            <input type="hidden" name="name" value="{{ section.name }}" />
+                                            <input type="hidden" name="label" value="{{ section.label }}" />
+                                            <input type="hidden" name="is_active" value="on" />
+                                            <div class="form-group mb-3">
+                                                <label>Content</label>
+                                                <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
+                                            </div>
+                                        {% elif section.name == 'footer' %}
+                                        <!-- For footer section -->
+                                        <input type="hidden" name="order_number" value="{{ section.order_number }}" />
+                                        <input type="hidden" name="name" value="{{ section.name }}" />
+                                        <input type="hidden" name="label" value="{{ section.label }}" />
+                                        <input type="hidden" name="is_active" value="on" />
+                                        <div class="form-group mb-3">
+                                            <label>Footer Content</label>
+                                            <div class="alert alert-info">
+                                                This content will appear in the footer section of your website.
+                                                Use the editor below to modify the different parts.
+                                            </div>
+                                            <div class="card mb-3">
+                                                <div class="card-header">Header Title</div>
+                                                <div class="card-body">
+                                                    <textarea class="tinymce-editor" name="header_title" id="header_title_{{ section.id }}" data-target="pretitle">
+                                                        {{ section.content|get_footer_part:'pretitle'|safe }}
+                                                    </textarea>
+                                                </div>
+                                            </div>
+                                            <div class="card mb-3">
+                                                <div class="card-header">Main Message</div>
+                                                <div class="card-body">
+                                                    <textarea class="tinymce-editor" name="main_message" id="main_message_{{ section.id }}" data-target="primary">
+                                                        {{ section.content|get_footer_part:'primary'|safe }}
+                                                    </textarea>
+                                                </div>
+                                            </div>
+                                            <div class="card mb-3">
+                                                <div class="card-header">Contact Information</div>
+                                                <div class="card-body">
+                                                    <textarea class="tinymce-editor" name="contact_info" id="contact_info_{{ section.id }}" data-target="secondary">
+                                                        {{ section.content|get_footer_part:'secondary'|safe }}
+                                                    </textarea>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" name="content" id="combinedFooterContent{{ section.id }}" />
+                                        </div>
+                                        {% else %}
+                                            <!-- For other sections, show all fields -->
+                                            <div class="form-group mb-3">
+                                                <label for="order_number{{ section.id }}">Order Number</label>
+                                                <input
+                                                    type="number"
+                                                    class="form-control"
+                                                    id="order_number{{ section.id }}"
+                                                    name="order_number"
+                                                    value="{{ section.order_number }}"
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="name{{ section.id }}">Name</label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="name{{ section.id }}"
+                                                    name="name"
+                                                    value="{{ section.name }}"
+                                                    required
+                                                />
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="label{{ section.id }}">Label</label>
+                                                <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="label{{ section.id }}"
+                                                    name="label"
+                                                    value="{{ section.label }}"
+                                                    required
+                                                    maxlength="10"
+                                                />
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label>Content</label>
+                                                <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
+                                            </div>
+                                            <div class="form-check mb-3">
+                                                <input 
+                                                    type="checkbox" 
+                                                    class="form-check-input" 
+                                                    id="is_active{{ section.id }}"
+                                                    name="is_active" 
+                                                    {% if section.is_active %}checked{% endif %}
+                                                />
+                                                <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            Close
+                                        </button>
+                                        {% if section.name == 'footer' %}
+                                            <button type="button" class="btn btn-primary" onclick="combineAndSubmitFooter({{ section.id }})">
+                                                Save changes
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-primary">
+                                                Save changes
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </form>
                             </div>
-                            <div class="modal-footer">
-                              <button
-                                type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal"
-                              >
-                                Close
-                              </button>
-                              <button type="submit" class="btn btn-primary">
-                                Save changes
-                              </button>
-                            </div>
-                          </form>
                         </div>
-                      </div>
                     </div>
                     {% endfor %}
                   </tbody>
@@ -693,11 +726,52 @@
         </div>
       </div>
     </div>
-
-    <!-- Initialize TinyMCE -->
     <script>
+    function combineAndSubmitFooter(sectionId) {
+        // Get values from all TinyMCE editors within the specific modal
+        const headerTitleEditor = tinymce.get(`header_title_${sectionId}`);
+        const mainMessageEditor = tinymce.get(`main_message_${sectionId}`);
+        const contactInfoEditor = tinymce.get(`contact_info_${sectionId}`);
+
+        if (!headerTitleEditor || !mainMessageEditor || !contactInfoEditor) {
+            console.error('One or more TinyMCE editors not found');
+            return;
+        }
+
+        const headerTitle = headerTitleEditor.getContent();
+        const mainMessage = mainMessageEditor.getContent();
+        const contactInfo = contactInfoEditor.getContent();
+        
+
+        // Combine them into the final structure
+        const combinedContent = `
+              <h3 class="column lg-12 section-header__pretitle text-pretitle">
+                  ${headerTitle}
+              </h3>
+              <div class="column lg-6 stack-on-1100 section-header__primary">
+                  ${mainMessage}
+              </div>
+              <div class="column lg-6 stack-on-1100 section-header__secondary">
+                  ${contactInfo}
+              </div>
+        `.trim();
+
+        // Set the combined content to the hidden input
+        const hiddenInput = document.getElementById(`combinedFooterContent${sectionId}`);
+        if (hiddenInput) {
+            hiddenInput.value = combinedContent;
+            // Submit the form
+            document.querySelector(`#editModal${sectionId} form`).submit();
+        } else {
+            console.error('Hidden input not found');
+        }
+    }
+
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize TinyMCE for both regular and footer editors
         tinymce.init({
-            selector: '.tinymce-editor',
+            selector: '.tinymce-editor:not([data-target])',
             height: 300,
             plugins: [
                 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
@@ -707,10 +781,27 @@
             toolbar: 'undo redo | blocks | ' +
                 'bold italic forecolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help',
-            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'
+                'removeformat | help'
         });
+
+        // Initialize footer-specific editors
+        tinymce.init({
+            selector: '.tinymce-editor[data-target]',
+            height: 200,
+            menubar: false,
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+                'bold italic | alignleft aligncenter alignright | ' +
+                'bullist numlist | link | removeformat | help'
+        });
+    });
     </script>
+
+
 
     <script src="{% static 'libs/jquery/dist/jquery.min.js' %}"></script>
     <script src="{% static 'libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>

@@ -103,9 +103,11 @@
 
             <div class="column lg-12 s-intro__content-inner">
               <h1 class="s-intro__content-title">
-                We provide creative <br />
-                solutions to turn your <br />
-                ideas into digital reality.
+                {% for section in sections %}
+                    {% if section.name == 'intro' %}
+                        {{ section.content|safe }}
+                    {% endif %}
+                {% endfor %}
               </h1>
 
               <div class="s-intro__content-buttons">
@@ -142,7 +144,7 @@
 
         <!-- about            ----------------------------------------------- -->
         <section id="about" class="s-about target-section">
-          <div class="row section-header" data-num="01">
+          <div class="row section-header" data-num="1">
             <h3
               class="column lg-12 section-header__pretitle pretitle text-pretitle"
             >
@@ -237,7 +239,7 @@
 
         <!-- services            ----------------------------------------------- -->
         <section id="services" class="s-services target-section">
-          <div class="row section-header" data-num="02">
+          <div class="row section-header" data-num="2">
             <h3 class="column lg-12 section-header__pretitle text-pretitle">
               What We Do
             </h3>
@@ -441,7 +443,7 @@
 
         <!-- portfolio            ----------------------------------------------- -->
         <section id="folio" class="s-folio target-section">
-          <div class="row section-header light-on-dark" data-num="03">
+          <div class="row section-header light-on-dark" data-num="3">
             <h3 class="column lg-12 section-header__pretitle text-pretitle">
               Recent Works
             </h3>
@@ -921,36 +923,13 @@
       <!-- # site-footer
         ================================================== -->
       <footer id="footer" class="s-footer target-section">
-        <div class="row section-header" data-num="04">
-          <h3 class="column lg-12 section-header__pretitle text-pretitle">
-            Get In Touch
-          </h3>
-          <div class="column lg-6 stack-on-1100 section-header__primary">
-            <h2 class="title text-display-1">
-              Have an idea or an epic project in mind? Talk to us. Let's work
-              together and make something great. Drop us a line at
-              <a href="mailto:#0" title="">hello@mueller.com</a>
-            </h2>
-          </div>
-          <div class="column lg-6 stack-on-1100 section-header__secondary">
-            <div class="contact-block">
-              <h6>Where To Find Us</h6>
-              <p>
-                1600 Amphitheatre Parkway <br />
-                Mountain View, California <br />
-                94043 US
-              </p>
+        {% for section in sections %}
+            {% if section.name == 'footer' %}
+            <div class="row section-header" data-num="{{ section.order_number }}">
+                {{ section.content|safe }}
             </div>
-
-            <div class="contact-block">
-              <h6>Contact Infos</h6>
-              <ul class="contact-list">
-                <li><a href="tel:197-543-2345">+197 543 2345</a></li>
-                <li><a href="tel:197-123-9876">+197 123 9876</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
+            {% endif %}
+        {% endfor %}
         <!-- end section-header -->
 
         <div

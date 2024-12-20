@@ -19,14 +19,14 @@ from django.db import IntegrityError
 def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
 
-
 def home(request):
+    sections = Section.objects.filter(is_active=True).order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
     return render(
         request,
         "Mueller_1_0_0/index.html",
-        {"video": video, "social_medias": social_medias},
+        {"sections": sections, "video": video, "social_medias": social_medias},
     )
 
 
@@ -238,27 +238,51 @@ def create_section(request):
             messages.success(request, "Section created successfully.")
         except Exception as e:
             messages.error(request, f"Error creating section: {str(e)}")
-    return redirect("sections_page")
+    return redirect("sections-page")
 
 
 @login_required
 def update_section(request, section_id):
     section = get_object_or_404(Section, id=section_id)
+
     if request.method == "POST":
         try:
-            section.name = request.POST.get("name")
-            section.label = request.POST.get("label")
-            section.content = request.POST.get("content")
-            section.order_number = request.POST.get("order_number")
-            section.is_active = request.POST.get("is_active") == "on"
+            if section.name == "footer":
+                # For footer section, update content only
+                section.content = request.POST.get("content")
+                # Get all sections except footer and order them
+                other_sections = Section.objects.exclude(name="footer").order_by(
+                    "-order_number"
+                )
+                if other_sections.exists():
+                    # Set order number to be higher than the highest non-footer section
+                    section.order_number = other_sections.first().order_number + 1
+                else:
+                    # If no other sections exist, set to a high number
+                    section.order_number = 1000
+
+            elif section.name == "intro":
+                # For intro section, update content only
+                section.content = request.POST.get("content")
+
+            else:
+                # For other sections, update all fields
+                section.name = request.POST.get("name")
+                section.label = request.POST.get("label")
+                section.order_number = request.POST.get("order_number")
+                section.content = request.POST.get("content")
+                section.is_active = request.POST.get("is_active") == "on"
+
             section.last_edited_by = request.user
             section.last_edited_date = timezone.now()
             section.save()
 
             messages.success(request, "Section updated successfully.")
         except Exception as e:
+            print(f"Error details: {e}")  # For debugging
             messages.error(request, f"Error updating section: {str(e)}")
-    return redirect("sections_page")
+
+    return redirect("sections-page")
 
 
 @login_required
@@ -270,7 +294,7 @@ def delete_section(request, section_id):
             messages.success(request, "Section deleted successfully.")
         except Exception as e:
             messages.error(request, f"Error deleting section: {str(e)}")
-    return redirect("sections_page")
+    return redirect("sections-page")
 
 
 def authentication_register(request):
