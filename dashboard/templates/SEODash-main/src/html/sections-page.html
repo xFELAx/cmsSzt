@@ -435,7 +435,7 @@
                       <td>{{ section.last_edited_by.username }}</td>
                       <td>{{ section.last_edited_date|date:"Y-m-d H:i" }}</td>
                       <td>
-                          {% if section.name == 'intro' %}
+                          {% if section.name == 'intro' or section.name == 'footer' %}
                               <!-- Intro section is always active -->
                               <button type="button" class="btn btn-sm btn-success" disabled>
                                   Always Active
@@ -476,7 +476,7 @@
                           </button>
                           
                           <!-- Delete button only shows for non-intro sections -->
-                          {% if section.name != 'intro' %}
+                          {% if section.name != 'intro' and section.name != 'footer' %}
                               <form
                                   method="post"
                                   action="{% url 'delete_section' section.id %}"
