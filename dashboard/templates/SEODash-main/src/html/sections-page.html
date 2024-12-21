@@ -678,6 +678,7 @@
 
       function addListItem() {
           const container = document.getElementById('listItemsContainer');
+          const editorId = `list-item-editor-${listItemCount}`;
           const itemHtml = `
               <div class="list-item-block mb-3" data-item-id="${listItemCount}">
                   <div class="form-group mb-2">
@@ -686,7 +687,7 @@
                   </div>
                   <div class="form-group mb-2">
                       <label>Content</label>
-                      <textarea class="tinymce-editor list-item-content"></textarea>
+                      <textarea id="${editorId}" class="tinymce-editor list-item-content"></textarea>
                   </div>
                   <button type="button" class="btn btn-danger btn-sm" onclick="removeListItem(${listItemCount})">
                       Remove Item
@@ -698,7 +699,7 @@
           
           // Initialize TinyMCE for new textarea
           tinymce.init({
-              selector: `.list-item-block[data-item-id="${listItemCount}"] .tinymce-editor`,
+              selector: `#${editorId}`,
               height: 200,
               menubar: false,
               plugins: ['advlist', 'autolink', 'lists', 'link', 'charmap', 'preview'],
@@ -707,6 +708,7 @@
           
           listItemCount++;
       }
+
 
       function removeListItem(itemId) {
           const item = document.querySelector(`.list-item-block[data-item-id="${itemId}"]`);
@@ -721,57 +723,75 @@
       }
 
       function combineAndSubmitSection() {
-          // Get header content
-          const pretitle = tinymce.get('header_pretitle')?.getContent() || '';
-          const primary = tinymce.get('header_primary')?.getContent() || '';
-          const secondary = tinymce.get('header_secondary')?.getContent() || '';
+          try {
+              // Get header content using proper selectors
+              const pretitleEditor = tinymce.get(document.querySelector('[name="header_pretitle"]').id);
+              const primaryEditor = tinymce.get(document.querySelector('[name="header_primary"]').id);
+              const secondaryEditor = tinymce.get(document.querySelector('[name="header_secondary"]').id);
 
-          // Get list items
-          const listItems = Array.from(document.querySelectorAll('.list-item-block')).map(item => {
-              const itemId = item.dataset.itemId;
-              const contentEditor = item.querySelector('.tinymce-editor');
-              return {
-                  title: item.querySelector('.list-item-title').value,
-                  content: tinymce.get(contentEditor.id)?.getContent() || ''
-              };
-          });
+              if (!pretitleEditor || !primaryEditor || !secondaryEditor) {
+                  console.error('One or more header editors not found');
+                  return;
+              }
 
-          // Combine into final structure
-          const combinedContent = `
-              <div class="row section-header" data-num="${document.getElementById('order_number').value}">
-                  <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">
-                      ${pretitle}
-                  </h3>
-                  <div class="column lg-6 stack-on-1100 section-header__primary">
-                      <h2 class="title text-display-1">
-                          ${primary}
-                      </h2>
-                  </div>
-                  <div class="column lg-6 stack-on-1100 section-header__secondary">
-                      <p class="desc">
-                          ${secondary}
-                      </p>
-                  </div>
-              </div>
+              const pretitle = pretitleEditor.getContent();
+              const primary = primaryEditor.getContent();
+              const secondary = secondaryEditor.getContent();
 
-              <div class="row process-list list-block show-ctr block-lg-one-half block-tab-whole">
-                  ${listItems.map(item => `
-                      <div class="column list-block__item">
-                          <div class="list-block__title">
-                              <h3 class="h5">${item.title}</h3>
-                          </div>
-                          <div class="list-block__text">
-                              <p>${item.content}</p>
-                          </div>
+              // Get list items
+              const listItems = Array.from(document.querySelectorAll('.list-item-block')).map(item => {
+                  const contentEditor = tinymce.get(item.querySelector('.list-item-content').id);
+                  if (!contentEditor) {
+                      console.error('List item editor not found');
+                      return null;
+                  }
+                  return {
+                      title: item.querySelector('.list-item-title').value,
+                      content: contentEditor.getContent()
+                  };
+              }).filter(item => item !== null);
+
+              // Combine into final structure
+              const combinedContent = `
+                  <div class="row section-header" data-num="${document.getElementById('order_number').value}">
+                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">
+                          ${pretitle}
+                      </h3>
+                      <div class="column lg-6 stack-on-1100 section-header__primary">
+                          <h2 class="title text-display-1">
+                              ${primary}
+                          </h2>
                       </div>
-                  `).join('')}
-              </div>
-          `;
+                      <div class="column lg-6 stack-on-1100 section-header__secondary">
+                          <p class="desc">
+                              ${secondary}
+                          </p>
+                      </div>
+                  </div>
 
-          // Set combined content and submit
-          document.getElementById('combinedContent').value = combinedContent.trim();
-          document.getElementById('createSectionForm').submit();
+                  <div class="row process-list list-block show-ctr block-lg-one-half block-tab-whole">
+                      ${listItems.map(item => `
+                          <div class="column list-block__item">
+                              <div class="list-block__title">
+                                  <h3 class="h5">${item.title}</h3>
+                              </div>
+                              <div class="list-block__text">
+                                  <p>${item.content}</p>
+                              </div>
+                          </div>
+                      `).join('')}
+                  </div>
+              `;
+
+              // Set combined content and submit
+              document.getElementById('combinedContent').value = combinedContent.trim();
+              document.getElementById('createSectionForm').submit();
+          } catch (error) {
+              console.error('Error in combineAndSubmitSection:', error);
+              alert('There was an error creating the section. Please check the console for details.');
+          }
       }
+
 
       function combineAndSubmitFooter(sectionId) {
           // Get values from all TinyMCE editors within the specific modal
@@ -835,11 +855,6 @@
               selector: '.tinymce-editor[data-target]',
               height: 200,
               menubar: false,
-              setup: function(editor) {
-                  editor.on('init', function() {
-                      editor.id = editor.getElement().getAttribute('name');
-                  });
-              },
               plugins: [
                   'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
                   'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
@@ -849,6 +864,30 @@
                   'bold italic | alignleft aligncenter alignright | ' +
                   'bullist numlist | link | removeformat | help'
           });
+
+          // Initialize TinyMCE for header content editors
+          const headerEditors = document.querySelectorAll('[name="header_pretitle"], [name="header_primary"], [name="header_secondary"]');
+          headerEditors.forEach((editor, index) => {
+              if (!editor.id) {
+                  editor.id = `header-editor-${index}`; // Ensure unique IDs
+              }
+              if (!tinymce.get(editor.id)) { // Avoid reinitialization
+                  tinymce.init({
+                      selector: `#${editor.id}`,
+                      height: 200,
+                      menubar: false,
+                      plugins: [
+                          'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                          'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                          'help', 'wordcount'
+                      ],
+                      toolbar: 'undo redo | blocks | ' +
+                          'bold italic | alignleft aligncenter alignright | ' +
+                          'bullist numlist | link | removeformat | help'
+                  });
+              }
+          });
+
       });
     </script>
 

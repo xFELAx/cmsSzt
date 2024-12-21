@@ -229,12 +229,15 @@ def create_section(request):
         try:
             # Get the new section's order number
             new_order_number = int(request.POST.get("order_number"))
+            
+            # Get the content from the hidden input that contains the combined HTML
+            combined_content = request.POST.get("content", "")
 
             # Create the new section
             section = Section.objects.create(
                 name=request.POST.get("name"),
                 label=request.POST.get("label"),
-                content=request.POST.get("content"),
+                content=combined_content,
                 order_number=new_order_number,
                 last_edited_by=request.user,
                 last_edited_date=timezone.now(),

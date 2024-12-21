@@ -1,47 +1,23 @@
 from django import template
 import re
+from bs4 import BeautifulSoup
 
 register = template.Library()
 
-
 @register.filter
 def get_footer_part(content, part):
+    """Enhanced footer part extraction"""
     if not content:
         return ""
 
     patterns = {
-        "pretitle": r'<h3 class="column lg-12 section-header__pretitle text-pretitle">(.*?)</h3>',
-        "primary": r'<div class="column lg-6 stack-on-1100 section-header__primary">(.*?)</div>',
-        "secondary": r'<div class="column lg-6 stack-on-1100 section-header__secondary">(.*?)</div>',
+        "pretitle": r'<h3[^>]*class="[^"]*section-header__pretitle[^"]*"[^>]*>(.*?)</h3>',
+        "primary": r'<div[^>]*class="[^"]*section-header__primary[^"]*"[^>]*>(.*?)</div>',
+        "secondary": r'<div[^>]*class="[^"]*section-header__secondary[^"]*"[^>]*>(.*?)</div>',
     }
 
     if part in patterns:
-        match = re.search(patterns[part], content, re.DOTALL)
+        match = re.search(patterns[part], content, re.DOTALL | re.IGNORECASE)
         if match:
             return match.group(1).strip()
     return ""
-
-@register.filter
-def extractPretitle(content):
-    match = re.search(r'<h3 class="column lg-12[^>]*>(.*?)</h3>', content, re.DOTALL)
-    return match.group(1) if match else ""
-
-
-@register.filter
-def extractPrimary(content):
-    match = re.search(
-        r'<div class="column lg-6[^>]*section-header__primary[^>]*>(.*?)</div>',
-        content,
-        re.DOTALL,
-    )
-    return match.group(1) if match else ""
-
-
-@register.filter
-def extractSecondary(content):
-    match = re.search(
-        r'<div class="column lg-6[^>]*section-header__secondary[^>]*>(.*?)</div>',
-        content,
-        re.DOTALL,
-    )
-    return match.group(1) if match else ""
