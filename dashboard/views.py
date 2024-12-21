@@ -14,13 +14,14 @@ from django.views.generic import CreateView
 from django import forms
 from django.contrib import messages
 from django.db import IntegrityError
+from django.db.models import Max
 
 
 def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
 
 def home(request):
-    sections = Section.objects.filter(is_active=True).order_by("order_number")
+    sections = Section.objects.order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
     return render(
@@ -226,15 +227,32 @@ def sections_page(request):
 def create_section(request):
     if request.method == "POST":
         try:
+            # Get the new section's order number
+            new_order_number = int(request.POST.get("order_number"))
+
+            # Create the new section
             section = Section.objects.create(
                 name=request.POST.get("name"),
                 label=request.POST.get("label"),
                 content=request.POST.get("content"),
-                order_number=request.POST.get("order_number"),
-                is_active=request.POST.get("is_active") == "on",
+                order_number=new_order_number,
                 last_edited_by=request.user,
                 last_edited_date=timezone.now(),
             )
+
+            # Update footer's order number if necessary
+            footer_section = Section.objects.filter(name="footer").first()
+            if footer_section:
+                # Get the highest order number among non-footer sections
+                highest_order = Section.objects.exclude(name="footer").aggregate(
+                    Max("order_number")
+                )["order_number__max"]
+
+                # If the new order number is higher than or equal to footer's order number
+                if highest_order >= footer_section.order_number:
+                    footer_section.order_number = highest_order + 1
+                    footer_section.save()
+
             messages.success(request, "Section created successfully.")
         except Exception as e:
             messages.error(request, f"Error creating section: {str(e)}")
@@ -267,15 +285,42 @@ def update_section(request, section_id):
 
             else:
                 # For other sections, update all fields
+                old_order_number = section.order_number
+                new_order_number = int(request.POST.get("order_number"))
+
                 section.name = request.POST.get("name")
                 section.label = request.POST.get("label")
-                section.order_number = request.POST.get("order_number")
+                section.order_number = new_order_number
                 section.content = request.POST.get("content")
-                section.is_active = request.POST.get("is_active") == "on"
+
+                # Get the highest non-footer order number (excluding current section)
+                highest_non_footer = (
+                    Section.objects.exclude(name="footer")
+                    .exclude(id=section.id)
+                    .aggregate(Max("order_number"))["order_number__max"]
+                    or 0
+                )
+
+                # Get footer section
+                footer_section = Section.objects.filter(name="footer").first()
 
             section.last_edited_by = request.user
             section.last_edited_date = timezone.now()
             section.save()
+
+            # Update footer section order after saving the current section
+            if section.name != "footer" and section.name != "intro" and footer_section:
+                # If this section will have the highest order number among non-footer sections
+                if new_order_number >= highest_non_footer:
+                    # Ensure footer has higher order number
+                    footer_section.order_number = new_order_number + 1
+                    footer_section.save()
+                # If this section's new order is lower, but old order was highest
+                elif old_order_number == highest_non_footer:
+                    # Find new highest non-footer section and update footer accordingly
+                    new_highest = max(highest_non_footer, new_order_number)
+                    footer_section.order_number = new_highest + 1
+                    footer_section.save()
 
             messages.success(request, "Section updated successfully.")
         except Exception as e:
@@ -288,12 +333,36 @@ def update_section(request, section_id):
 @login_required
 def delete_section(request, section_id):
     section = get_object_or_404(Section, id=section_id)
+
     if request.method == "POST":
         try:
-            section.delete()
-            messages.success(request, "Section deleted successfully.")
+            if section.name in ["intro", "footer"]:
+                messages.error(
+                    request, f"The {section.name} section cannot be deleted."
+                )
+            else:
+                # Delete the section
+                section.delete()
+
+                # Update footer's order number to be highest
+                footer_section = Section.objects.filter(name="footer").first()
+                if footer_section:
+                    # Get the highest order number among remaining sections
+                    highest_order = (
+                        Section.objects.exclude(name="footer").aggregate(
+                            Max("order_number")
+                        )["order_number__max"]
+                        or 0
+                    )
+
+                    # Set footer's order number to be one higher
+                    footer_section.order_number = highest_order + 1
+                    footer_section.save()
+
+                messages.success(request, "Section deleted successfully.")
         except Exception as e:
             messages.error(request, f"Error deleting section: {str(e)}")
+
     return redirect("sections-page")
 
 

@@ -47,7 +47,6 @@ class SocialMedia(models.Model):
 
 class Section(models.Model):
     id = models.AutoField(primary_key=True)
-    is_active = models.BooleanField(default=False)
     order_number = models.SmallIntegerField(null=False)
     name = models.CharField(max_length=30, null=False)
     label = models.CharField(max_length=10, null=False)

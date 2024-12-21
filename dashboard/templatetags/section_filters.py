@@ -20,3 +20,28 @@ def get_footer_part(content, part):
         if match:
             return match.group(1).strip()
     return ""
+
+@register.filter
+def extractPretitle(content):
+    match = re.search(r'<h3 class="column lg-12[^>]*>(.*?)</h3>', content, re.DOTALL)
+    return match.group(1) if match else ""
+
+
+@register.filter
+def extractPrimary(content):
+    match = re.search(
+        r'<div class="column lg-6[^>]*section-header__primary[^>]*>(.*?)</div>',
+        content,
+        re.DOTALL,
+    )
+    return match.group(1) if match else ""
+
+
+@register.filter
+def extractSecondary(content):
+    match = re.search(
+        r'<div class="column lg-6[^>]*section-header__secondary[^>]*>(.*?)</div>',
+        content,
+        re.DOTALL,
+    )
+    return match.group(1) if match else ""

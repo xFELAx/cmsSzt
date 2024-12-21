@@ -422,7 +422,6 @@
                       <th>Name</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
-                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -434,36 +433,6 @@
                       <td>{{ section.name }}</td>
                       <td>{{ section.last_edited_by.username }}</td>
                       <td>{{ section.last_edited_date|date:"Y-m-d H:i" }}</td>
-                      <td>
-                          {% if section.name == 'intro' or section.name == 'footer' %}
-                              <!-- Intro section is always active -->
-                              <button type="button" class="btn btn-sm btn-success" disabled>
-                                  Always Active
-                              </button>
-                          {% else %}
-                              <!-- Status toggle for non-intro sections -->
-                              <form method="post" action="{% url 'update_section' section.id %}">
-                                  {% csrf_token %}
-                                  <input type="hidden" name="order_number" value="{{ section.order_number }}" />
-                                  <input type="hidden" name="name" value="{{ section.name }}" />
-                                  <input type="hidden" name="label" value="{{ section.label }}" />
-                                  <input
-                                      type="checkbox"
-                                      name="is_active"
-                                      {% if section.is_active %}checked{% endif %}
-                                      onchange="this.form.submit()"
-                                      style="display: none"
-                                  />
-                                  <button
-                                      type="button"
-                                      class="btn btn-sm {% if section.is_active %}btn-success{% else %}btn-secondary{% endif %}"
-                                      onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()"
-                                  >
-                                      {% if section.is_active %}Active{% else %}Make Active{% endif %}
-                                  </button>
-                              </form>
-                          {% endif %}
-                      </td>
                       <td>
                           <!-- Edit button always shows -->
                           <button
@@ -510,7 +479,6 @@
                                             <input type="hidden" name="order_number" value="{{ section.order_number }}" />
                                             <input type="hidden" name="name" value="{{ section.name }}" />
                                             <input type="hidden" name="label" value="{{ section.label }}" />
-                                            <input type="hidden" name="is_active" value="on" />
                                             <div class="form-group mb-3">
                                                 <label>Content</label>
                                                 <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
@@ -520,7 +488,6 @@
                                         <input type="hidden" name="order_number" value="{{ section.order_number }}" />
                                         <input type="hidden" name="name" value="{{ section.name }}" />
                                         <input type="hidden" name="label" value="{{ section.label }}" />
-                                        <input type="hidden" name="is_active" value="on" />
                                         <div class="form-group mb-3">
                                             <label>Footer Content</label>
                                             <div class="alert alert-info">
@@ -593,16 +560,6 @@
                                                 <label>Content</label>
                                                 <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
                                             </div>
-                                            <div class="form-check mb-3">
-                                                <input 
-                                                    type="checkbox" 
-                                                    class="form-check-input" 
-                                                    id="is_active{{ section.id }}"
-                                                    name="is_active" 
-                                                    {% if section.is_active %}checked{% endif %}
-                                                />
-                                                <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
-                                            </div>
                                         {% endif %}
                                     </div>
                                     <div class="modal-footer">
@@ -645,78 +602,68 @@
 
               <!-- Add New Section Modal -->
               <div class="modal fade" id="addNewModal" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title">Add New</h5>
-                      <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                      ></button>
-                    </div>
-                    <form method="post" action="{% url 'create_section' %}">
-                      {% csrf_token %}
-                      <div class="modal-body">
-                        <div class="form-group mb-3">
-                          <label for="order_number">Order Number</label>
-                          <input
-                            type="number"
-                            class="form-control"
-                            id="order_number"
-                            name="order_number"
-                            required
-                          />
-                        </div>
-                        <div class="form-group mb-3">
-                          <label for="name">Name</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="name"
-                            name="name"
-                            required
-                          />
-                        </div>
-                        <div class="form-group mb-3">
-                          <label for="label">Label</label>
-                          <input
-                            type="text"
-                            class="form-control"
-                            id="label"
-                            name="label"
-                            required
-                            maxlength="10"
-                          />
-                        </div>
-                        <div class="form-group mb-3">
-                                  <label>Content</label>
-                                  <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
-                        </div>
-                        <div class="form-check">
-                          <input
-                            type="checkbox"
-                            class="form-check-input"
-                            id="is_active"
-                            name="is_active"
-                          />
-                          <label class="form-check-label" for="is_active"
-                            >Active</label
-                          >
-                        </div>
-                      </div>
-                      <div class="modal-footer">
-                        <button
-                          type="button"
-                          class="btn btn-secondary"
-                          data-bs-dismiss="modal"
-                        >
-                          Close
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                          Create Section
-                        </button>
-                      </div>
+                  <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                          <div class="modal-header">
+                              <h5 class="modal-title">Add New Section</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                          </div>
+                          <form method="post" action="{% url 'create_section' %}" id="createSectionForm">
+                              {% csrf_token %}
+                              <div class="modal-body">
+                                  <div class="form-group mb-3">
+                                      <label for="order_number">Order Number</label>
+                                      <input type="number" class="form-control" id="order_number" name="order_number" required />
+                                  </div>
+                                  <div class="form-group mb-3">
+                                      <label for="name">Name</label>
+                                      <input type="text" class="form-control" id="name" name="name" required />
+                                  </div>
+                                  <div class="form-group mb-3">
+                                      <label for="label">Label</label>
+                                      <input type="text" class="form-control" id="label" name="label" required maxlength="10" />
+                                  </div>
+                                  
+                                  <!-- Section Header Content -->
+                                  <div class="card mb-3">
+                                      <div class="card-header">Section Header</div>
+                                      <div class="card-body">
+                                          <div class="form-group mb-3">
+                                              <label>Pre-title</label>
+                                              <textarea class="tinymce-editor" name="header_pretitle" data-target="pretitle"></textarea>
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <label>Primary Content</label>
+                                              <textarea class="tinymce-editor" name="header_primary" data-target="primary"></textarea>
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <label>Secondary Content</label>
+                                              <textarea class="tinymce-editor" name="header_secondary" data-target="secondary"></textarea>
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <!-- List Block Content -->
+                                  <div class="card mb-3">
+                                      <div class="card-header">
+                                          List Items 
+                                          <button type="button" class="btn btn-sm btn-primary float-end" onclick="addListItem()">
+                                              Add Item
+                                          </button>
+                                      </div>
+                                      <div class="card-body" id="listItemsContainer">
+                                          <!-- List items will be added here dynamically -->
+                                      </div>
+                                  </div>
+
+                                  <input type="hidden" name="content" id="combinedContent" />
+                              </div>
+                              <div class="modal-footer">
+                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="button" class="btn btn-primary" onclick="combineAndSubmitSection()">
+                                      Create Section
+                                  </button>
+                              </div>
                     </form>
                   </div>
                 </div>
@@ -727,78 +674,182 @@
       </div>
     </div>
     <script>
-    function combineAndSubmitFooter(sectionId) {
-        // Get values from all TinyMCE editors within the specific modal
-        const headerTitleEditor = tinymce.get(`header_title_${sectionId}`);
-        const mainMessageEditor = tinymce.get(`main_message_${sectionId}`);
-        const contactInfoEditor = tinymce.get(`contact_info_${sectionId}`);
+      let listItemCount = 0;
 
-        if (!headerTitleEditor || !mainMessageEditor || !contactInfoEditor) {
-            console.error('One or more TinyMCE editors not found');
-            return;
-        }
-
-        const headerTitle = headerTitleEditor.getContent();
-        const mainMessage = mainMessageEditor.getContent();
-        const contactInfo = contactInfoEditor.getContent();
-        
-
-        // Combine them into the final structure
-        const combinedContent = `
-              <h3 class="column lg-12 section-header__pretitle text-pretitle">
-                  ${headerTitle}
-              </h3>
-              <div class="column lg-6 stack-on-1100 section-header__primary">
-                  ${mainMessage}
+      function addListItem() {
+          const container = document.getElementById('listItemsContainer');
+          const itemHtml = `
+              <div class="list-item-block mb-3" data-item-id="${listItemCount}">
+                  <div class="form-group mb-2">
+                      <label>Title</label>
+                      <input type="text" class="form-control list-item-title" placeholder="Item Title">
+                  </div>
+                  <div class="form-group mb-2">
+                      <label>Content</label>
+                      <textarea class="tinymce-editor list-item-content"></textarea>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm" onclick="removeListItem(${listItemCount})">
+                      Remove Item
+                  </button>
+                  <hr>
               </div>
-              <div class="column lg-6 stack-on-1100 section-header__secondary">
-                  ${contactInfo}
+          `;
+          container.insertAdjacentHTML('beforeend', itemHtml);
+          
+          // Initialize TinyMCE for new textarea
+          tinymce.init({
+              selector: `.list-item-block[data-item-id="${listItemCount}"] .tinymce-editor`,
+              height: 200,
+              menubar: false,
+              plugins: ['advlist', 'autolink', 'lists', 'link', 'charmap', 'preview'],
+              toolbar: 'undo redo | blocks | bold italic | bullist numlist | removeformat'
+          });
+          
+          listItemCount++;
+      }
+
+      function removeListItem(itemId) {
+          const item = document.querySelector(`.list-item-block[data-item-id="${itemId}"]`);
+          if (item) {
+              // Remove TinyMCE instance
+              const editor = item.querySelector('.tinymce-editor');
+              if (editor) {
+                  tinymce.get(editor.id)?.remove();
+              }
+              item.remove();
+          }
+      }
+
+      function combineAndSubmitSection() {
+          // Get header content
+          const pretitle = tinymce.get('header_pretitle')?.getContent() || '';
+          const primary = tinymce.get('header_primary')?.getContent() || '';
+          const secondary = tinymce.get('header_secondary')?.getContent() || '';
+
+          // Get list items
+          const listItems = Array.from(document.querySelectorAll('.list-item-block')).map(item => {
+              const itemId = item.dataset.itemId;
+              const contentEditor = item.querySelector('.tinymce-editor');
+              return {
+                  title: item.querySelector('.list-item-title').value,
+                  content: tinymce.get(contentEditor.id)?.getContent() || ''
+              };
+          });
+
+          // Combine into final structure
+          const combinedContent = `
+              <div class="row section-header" data-num="${document.getElementById('order_number').value}">
+                  <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">
+                      ${pretitle}
+                  </h3>
+                  <div class="column lg-6 stack-on-1100 section-header__primary">
+                      <h2 class="title text-display-1">
+                          ${primary}
+                      </h2>
+                  </div>
+                  <div class="column lg-6 stack-on-1100 section-header__secondary">
+                      <p class="desc">
+                          ${secondary}
+                      </p>
+                  </div>
               </div>
-        `.trim();
 
-        // Set the combined content to the hidden input
-        const hiddenInput = document.getElementById(`combinedFooterContent${sectionId}`);
-        if (hiddenInput) {
-            hiddenInput.value = combinedContent;
-            // Submit the form
-            document.querySelector(`#editModal${sectionId} form`).submit();
-        } else {
-            console.error('Hidden input not found');
-        }
-    }
+              <div class="row process-list list-block show-ctr block-lg-one-half block-tab-whole">
+                  ${listItems.map(item => `
+                      <div class="column list-block__item">
+                          <div class="list-block__title">
+                              <h3 class="h5">${item.title}</h3>
+                          </div>
+                          <div class="list-block__text">
+                              <p>${item.content}</p>
+                          </div>
+                      </div>
+                  `).join('')}
+              </div>
+          `;
+
+          // Set combined content and submit
+          document.getElementById('combinedContent').value = combinedContent.trim();
+          document.getElementById('createSectionForm').submit();
+      }
+
+      function combineAndSubmitFooter(sectionId) {
+          // Get values from all TinyMCE editors within the specific modal
+          const headerTitleEditor = tinymce.get(`header_title_${sectionId}`);
+          const mainMessageEditor = tinymce.get(`main_message_${sectionId}`);
+          const contactInfoEditor = tinymce.get(`contact_info_${sectionId}`);
+
+          if (!headerTitleEditor || !mainMessageEditor || !contactInfoEditor) {
+              console.error('One or more TinyMCE editors not found');
+              return;
+          }
+
+          const headerTitle = headerTitleEditor.getContent();
+          const mainMessage = mainMessageEditor.getContent();
+          const contactInfo = contactInfoEditor.getContent();
+          
+
+          // Combine them into the final structure
+          const combinedContent = `
+                <h3 class="column lg-12 section-header__pretitle text-pretitle">
+                    ${headerTitle}
+                </h3>
+                <div class="column lg-6 stack-on-1100 section-header__primary">
+                    ${mainMessage}
+                </div>
+                <div class="column lg-6 stack-on-1100 section-header__secondary">
+                    ${contactInfo}
+                </div>
+          `.trim();
+
+          // Set the combined content to the hidden input
+          const hiddenInput = document.getElementById(`combinedFooterContent${sectionId}`);
+          if (hiddenInput) {
+              hiddenInput.value = combinedContent;
+              // Submit the form
+              document.querySelector(`#editModal${sectionId} form`).submit();
+          } else {
+              console.error('Hidden input not found');
+          }
+      }
 
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Initialize TinyMCE for both regular and footer editors
-        tinymce.init({
-            selector: '.tinymce-editor:not([data-target])',
-            height: 300,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic forecolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'removeformat | help'
-        });
+      document.addEventListener('DOMContentLoaded', function() {
+          // Initialize TinyMCE for both regular and footer editors
+          tinymce.init({
+              selector: '.tinymce-editor:not([data-target])',
+              height: 300,
+              plugins: [
+                  'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                  'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                  'insertdatetime', 'media', 'table', 'code', 'help', 'wordcount'
+              ],
+              toolbar: 'undo redo | blocks | ' +
+                  'bold italic forecolor | alignleft aligncenter ' +
+                  'alignright alignjustify | bullist numlist outdent indent | ' +
+                  'removeformat | help'
+          });
 
-        // Initialize footer-specific editors
-        tinymce.init({
-            selector: '.tinymce-editor[data-target]',
-            height: 200,
-            menubar: false,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic | alignleft aligncenter alignright | ' +
-                'bullist numlist | link | removeformat | help'
-        });
-    });
+          // Initialize footer-specific editors
+          tinymce.init({
+              selector: '.tinymce-editor[data-target]',
+              height: 200,
+              menubar: false,
+              setup: function(editor) {
+                  editor.on('init', function() {
+                      editor.id = editor.getElement().getAttribute('name');
+                  });
+              },
+              plugins: [
+                  'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                  'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                  'help', 'wordcount'
+              ],
+              toolbar: 'undo redo | blocks | ' +
+                  'bold italic | alignleft aligncenter alignright | ' +
+                  'bullist numlist | link | removeformat | help'
+          });
+      });
     </script>
 
 
