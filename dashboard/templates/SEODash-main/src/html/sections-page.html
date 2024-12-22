@@ -322,7 +322,7 @@
                           </button>
                           
                           <!-- Delete button only shows for non-intro sections -->
-                          {% if section.name != 'intro' and section.name != 'footer' %}
+                          {% if section.name != 'intro' and section.name != 'footer' and section.name != 'services' %}
                               <form
                                   method="post"
                                   action="{% url 'delete_section' section.id %}"
@@ -412,29 +412,8 @@
                                                   required
                                               />
                                           </div>
-                                          <div class="form-group mb-3">
-                                              <label for="name{{ section.id }}">Name</label>
-                                              <input
-                                                  type="text"
-                                                  class="form-control"
-                                                  id="name{{ section.id }}"
-                                                  name="name"
-                                                  value="{{ section.name }}"
-                                                  required
-                                              />
-                                          </div>
-                                          <div class="form-group mb-3">
-                                              <label for="label{{ section.id }}">Label</label>
-                                              <input
-                                                  type="text"
-                                                  class="form-control"
-                                                  id="label{{ section.id }}"
-                                                  name="label"
-                                                  value="{{ section.label }}"
-                                                  required
-                                                  maxlength="10"
-                                              />
-                                          </div>
+                                          <input type="hidden" name="name" value="{{ section.name }}" />
+                                          <input type="hidden" name="label" value="{{ section.label }}" />
                                           <div class="form-group mb-3">
                                               <div class="form-check form-switch">
                                                   <input class="form-check-input" type="checkbox" 
