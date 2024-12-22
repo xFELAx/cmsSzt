@@ -422,6 +422,7 @@
                       <th>Name</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -433,6 +434,13 @@
                       <td>{{ section.name }}</td>
                       <td>{{ section.last_edited_by.username }}</td>
                       <td>{{ section.last_edited_date|date:"Y-m-d H:i" }}</td>
+                      <td>
+                        {% if section.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Inactive</span>
+                        {% endif %}
+                      </td>
                       <td>
                           <!-- Edit button always shows -->
                           <button
@@ -479,6 +487,7 @@
                                             <input type="hidden" name="order_number" value="{{ section.order_number }}" />
                                             <input type="hidden" name="name" value="{{ section.name }}" />
                                             <input type="hidden" name="label" value="{{ section.label }}" />
+                                            <input type="hidden" name="is_active" value="true" />
                                             <div class="form-group mb-3">
                                                 <label>Content</label>
                                                 <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
@@ -488,6 +497,7 @@
                                         <input type="hidden" name="order_number" value="{{ section.order_number }}" />
                                         <input type="hidden" name="name" value="{{ section.name }}" />
                                         <input type="hidden" name="label" value="{{ section.label }}" />
+                                        <input type="hidden" name="is_active" value="true" />
                                         <div class="form-group mb-3">
                                             <label>Footer Content</label>
                                             <div class="alert alert-info">
@@ -520,6 +530,115 @@
                                             </div>
                                             <input type="hidden" name="content" id="combinedFooterContent{{ section.id }}" />
                                         </div>
+                                        {% elif section.name == 'services' %}
+                                        <!-- For other sections, show all fields -->
+                                          <div class="form-group mb-3">
+                                              <label for="order_number{{ section.id }}">Order Number</label>
+                                              <input
+                                                  type="number"
+                                                  class="form-control"
+                                                  id="order_number{{ section.id }}"
+                                                  name="order_number"
+                                                  value="{{ section.order_number }}"
+                                                  required
+                                              />
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <label for="name{{ section.id }}">Name</label>
+                                              <input
+                                                  type="text"
+                                                  class="form-control"
+                                                  id="name{{ section.id }}"
+                                                  name="name"
+                                                  value="{{ section.name }}"
+                                                  required
+                                              />
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <label for="label{{ section.id }}">Label</label>
+                                              <input
+                                                  type="text"
+                                                  class="form-control"
+                                                  id="label{{ section.id }}"
+                                                  name="label"
+                                                  value="{{ section.label }}"
+                                                  required
+                                                  maxlength="10"
+                                              />
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <div class="form-check form-switch">
+                                                  <input class="form-check-input" type="checkbox" 
+                                                        id="is_active{{ section.id }}" 
+                                                        name="is_active" 
+                                                        {% if section.is_active %}checked{% endif %}>
+                                                  <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
+                                              </div>
+                                          </div>
+
+                                          <!-- Section Header Content -->
+                                          <div class="card mb-3">
+                                              <div class="card-header">Section Header</div>
+                                              <div class="card-body">
+                                                  <div class="form-group mb-3">
+                                                      <label>Pre-title</label>
+                                                      <textarea class="tinymce-editor" name="header_pretitle" id="header_pretitle_{{ section.id }}" data-target="pretitle">
+                                                          {{ section.content|get_header_part:'pretitle'|safe }}
+                                                      </textarea>
+                                                  </div>
+                                                  <div class="form-group mb-3">
+                                                      <label>Primary Content</label>
+                                                      <textarea class="tinymce-editor" name="header_primary" id="header_primary_{{ section.id }}" data-target="primary">
+                                                          {{ section.content|get_header_part:'primary'|safe }}
+                                                      </textarea>
+                                                  </div>
+                                                  <div class="form-group mb-3">
+                                                      <label>Secondary Content</label>
+                                                      <textarea class="tinymce-editor" name="header_secondary" id="header_secondary_{{ section.id }}" data-target="secondary">
+                                                          {{ section.content|get_header_part:'secondary'|safe }}
+                                                      </textarea>
+                                                  </div>
+                                              </div>
+                                          </div>
+
+                                          <!-- List Block Content -->
+                                          <div class="card mb-3">
+                                              <div class="card-header">
+                                                  Services
+                                                  <button type="button" class="btn btn-sm btn-primary float-end" onclick="addService('{{ section.id }}')">
+                                                      Add Service
+                                                  </button>
+                                              </div>
+                                              <div class="card-body" id="servicesContainer{{ section.id }}">
+                                                  {% for service in section.services.all %}
+                                                  <div class="service-block mb-3" data-service-id="{{ service.id }}">
+                                                      <div class="form-group mb-2">
+                                                          <label>Order Number</label>
+                                                          <input type="number" class="form-control service-order" value="{{ service.order_number }}" min="1">
+                                                      </div>
+                                                      <div class="form-group mb-2">
+                                                          <label>Name</label>
+                                                          <input type="text" class="form-control service-name" value="{{ service.name }}" maxlength="30">
+                                                      </div>
+                                                      <div class="form-group mb-2">
+                                                          <label>Icon SVG</label>
+                                                          <textarea class="form-control service-icon" rows="3">{{ service.icon }}</textarea>
+                                                      </div>
+                                                      <div class="form-group mb-2">
+                                                          <label>Description</label>
+                                                          <textarea id="service-description-{{ section.id }}-{{ service.id }}" 
+                                                                  class="tinymce-editor service-description">{{ service.description }}</textarea>
+                                                      </div>
+                                                      <button type="button" class="btn btn-danger btn-sm" 
+                                                              onclick="removeService('{{ section.id }}', {{ service.id }})">
+                                                          Remove Service
+                                                      </button>
+                                                      <hr>
+                                                  </div>
+                                                  {% endfor %}
+                                              </div>
+                                          </div>
+                                          <input type="hidden" name="content" id="combinedContent{{ section.id }}" />
                                         {% else %}
                                           <!-- For other sections, show all fields -->
                                           <div class="form-group mb-3">
@@ -555,6 +674,15 @@
                                                   required
                                                   maxlength="10"
                                               />
+                                          </div>
+                                          <div class="form-group mb-3">
+                                              <div class="form-check form-switch">
+                                                  <input class="form-check-input" type="checkbox" 
+                                                        id="is_active{{ section.id }}" 
+                                                        name="is_active" 
+                                                        {% if section.is_active %}checked{% endif %}>
+                                                  <label class="form-check-label" for="is_active{{ section.id }}">Active</label>
+                                              </div>
                                           </div>
 
                                           <!-- Section Header Content -->
@@ -630,6 +758,10 @@
                                             <button type="submit" class="btn btn-primary">
                                                 Save changes
                                             </button>
+                                        {% elif section.name == 'services' %}
+                                            <button type="button" class="btn btn-primary" onclick="combineAndSubmitServicesSection({{ section.id }})">
+                                                Save changes
+                                            </button>
                                         {% else %}
                                             <button type="button" class="btn btn-primary" onclick="combineAndSubmitEditedSection({{ section.id }})">
                                                 Save changes
@@ -683,6 +815,16 @@
                                       <label for="label">Label</label>
                                       <input type="text" class="form-control" id="label" name="label" required maxlength="10" />
                                   </div>
+                                  <div class="form-group mb-3">
+                                      <div class="form-check form-switch">
+                                          <input class="form-check-input" type="checkbox" 
+                                                id="is_active" 
+                                                name="is_active" 
+                                                checked>
+                                          <label class="form-check-label" for="is_active">Active</label>
+                                      </div>
+                                  </div>
+
                                   
                                   <!-- Section Header Content -->
                                   <div class="card mb-3">
@@ -735,6 +877,119 @@
     </div>
     <script>
       let listItemCount = 0;
+
+      function addService(sectionId) {
+          const container = document.getElementById(`servicesContainer${sectionId}`);
+          const serviceCount = container.getElementsByClassName('service-block').length;
+          const serviceId = `new-${Date.now()}`;  // Temporary ID for new services
+          
+          const serviceHtml = `
+              <div class="service-block mb-3" data-service-id="${serviceId}">
+                  <div class="form-group mb-2">
+                      <label>Order Number</label>
+                      <input type="number" class="form-control service-order" value="${serviceCount + 1}" min="1">
+                  </div>
+                  <div class="form-group mb-2">
+                      <label>Name</label>
+                      <input type="text" class="form-control service-name" maxlength="30">
+                  </div>
+                  <div class="form-group mb-2">
+                      <label>Icon SVG</label>
+                      <textarea class="form-control service-icon" rows="3"></textarea>
+                  </div>
+                  <div class="form-group mb-2">
+                      <label>Description</label>
+                      <textarea id="service-description-${sectionId}-${serviceId}" 
+                              class="tinymce-editor service-description"></textarea>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm" 
+                          onclick="removeService('${sectionId}', '${serviceId}')">
+                      Remove Service
+                  </button>
+                  <hr>
+              </div>
+          `;
+          
+          container.insertAdjacentHTML('beforeend', serviceHtml);
+          
+          // Initialize TinyMCE for the new description field
+          tinymce.init({
+              selector: `#service-description-${sectionId}-${serviceId}`,
+              height: 200,
+              menubar: false,
+              plugins: [
+                  'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
+                  'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                  'help', 'wordcount'
+              ],
+              toolbar: 'undo redo | blocks | bold italic | bullist numlist | removeformat'
+          });
+      }
+
+      function removeService(sectionId, serviceId) {
+          const container = document.getElementById(`servicesContainer${sectionId}`);
+          const serviceBlock = container.querySelector(`[data-service-id="${serviceId}"]`);
+          
+          if (serviceBlock) {
+              // Remove TinyMCE instance
+              const editorId = `service-description-${sectionId}-${serviceId}`;
+              if (tinymce.get(editorId)) {
+                  tinymce.remove(`#${editorId}`);
+              }
+              serviceBlock.remove();
+          }
+      }
+
+      function getServicesData(sectionId) {
+          console.log('Getting services data for section:', sectionId);
+          
+          const container = document.getElementById(`servicesContainer${sectionId}`);
+          console.log('Container:', container);
+          
+          if (!container) {
+              console.error(`Services container not found: servicesContainer${sectionId}`);
+              return [];
+          }
+          
+          const services = [];
+          const serviceBlocks = container.querySelectorAll('.service-block');
+          console.log('Found service blocks:', serviceBlocks.length);
+          
+          serviceBlocks.forEach((block, index) => {
+              try {
+                  const serviceId = block.dataset.serviceId;
+                  console.log(`Processing service ${index + 1} with ID:`, serviceId);
+                  
+                  const orderInput = block.querySelector('.service-order');
+                  const nameInput = block.querySelector('.service-name');
+                  const iconInput = block.querySelector('.service-icon');
+                  const editorId = `service-description-${sectionId}-${serviceId}`;
+                  const descriptionEditor = tinymce.get(editorId);
+                  
+                  if (!orderInput || !nameInput || !iconInput) {
+                      console.error(`Missing required inputs for service ${serviceId}`);
+                      return;
+                  }
+                  
+                  services.push({
+                      id: serviceId.startsWith('new-') ? null : parseInt(serviceId),
+                      order_number: parseInt(orderInput.value) || 0,
+                      name: nameInput.value || '',
+                      icon: iconInput.value || '',
+                      description: descriptionEditor ? descriptionEditor.getContent() : '',
+                  });
+                  
+                  console.log(`Successfully processed service ${index + 1}`);
+              } catch (error) {
+                  console.error(`Error processing service block ${index + 1}:`, error);
+              }
+          });
+          
+          console.log('Processed services:', services);
+          return services;
+      }
+
+
 
       function addListItem(sectionId = '') {
           const containerId = sectionId ? `listItemsContainer${sectionId}` : 'listItemsContainer';
@@ -798,6 +1053,72 @@
               item.remove();
           }
       }
+
+      function combineAndSubmitServicesSection(sectionId) {
+          try {
+              // Wait for modal to be visible
+              const modal = document.getElementById(`editModal${sectionId}`);
+              if (!modal || !modal.classList.contains('show')) {
+                  console.error('Modal is not visible');
+                  return;
+              }
+              // Get header content using proper selectors with section ID
+              const pretitleEditor = tinymce.get(`header_pretitle_${sectionId}`);
+              const primaryEditor = tinymce.get(`header_primary_${sectionId}`);
+              const secondaryEditor = tinymce.get(`header_secondary_${sectionId}`);
+
+              if (!pretitleEditor || !primaryEditor || !secondaryEditor) {
+                  console.error('One or more header editors not found');
+                  return;
+              }
+
+              const pretitle = pretitleEditor.getContent();
+              const primary = primaryEditor.getContent();
+              const secondary = secondaryEditor.getContent();
+
+              // Combine into services-specific structure
+              const combinedContent = `
+                  <div class="row section-header" data-num="${document.querySelector(`#order_number${sectionId}`).value}">
+                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">${pretitle}</h3>
+                      <div class="column lg-6 stack-on-1100 section-header__primary">
+                          <h2 class="title text-display-1">${primary}</h2>
+                      </div>
+                      <div class="column lg-6 stack-on-1100 section-header__secondary desc">
+                          ${secondary}
+                      </div>
+                  </div>
+              `;
+
+              // Get services data
+              const servicesData = getServicesData(sectionId);
+              
+              // Add services data to form
+              const servicesDataInput = document.createElement('input');
+              servicesDataInput.type = 'hidden';
+              servicesDataInput.name = 'services_data';
+              servicesDataInput.value = JSON.stringify(servicesData);
+              
+              const form = document.querySelector(`#editModal${sectionId} form`);
+              if (!form) {
+                  throw new Error('Form not found');
+              }
+              form.appendChild(servicesDataInput);
+
+              // Set combined content
+              const contentInput = document.getElementById(`combinedContent${sectionId}`);
+              if (!contentInput) {
+                  throw new Error('Content input not found');
+              }
+              contentInput.value = combinedContent.trim();
+              
+              // Submit the form
+              form.submit();
+          } catch (error) {
+              console.error('Error in combineAndSubmitServicesSection:', error);
+              alert('There was an error updating the services section. Please check the console for details.');
+          }
+      }
+
 
       function combineAndSubmitEditedSection(sectionId = '') {
           try {

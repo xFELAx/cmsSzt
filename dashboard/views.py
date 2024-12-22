@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
@@ -6,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Section, Video, SocialMedia
+from .models import Section, Services, Video, SocialMedia
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -21,7 +22,7 @@ def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
 
 def home(request):
-    sections = Section.objects.order_by("order_number")
+    sections = Section.objects.filter(is_active=True).order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
     return render(
@@ -235,6 +236,7 @@ def create_section(request):
 
             # Create the new section
             section = Section.objects.create(
+                is_active=request.POST.get("is_active") == "on",
                 name=request.POST.get("name"),
                 label=request.POST.get("label"),
                 content=combined_content,
@@ -286,33 +288,88 @@ def update_section(request, section_id):
                 # For intro section, update content only
                 section.content = request.POST.get("content")
 
-            else:
+            elif section.name == "services":
                 # For other sections, update all fields
                 old_order_number = section.order_number
                 new_order_number = int(request.POST.get("order_number"))
 
+                section.is_active = request.POST.get("is_active") == "on"
                 section.name = request.POST.get("name")
                 section.label = request.POST.get("label")
                 section.order_number = new_order_number
                 section.content = request.POST.get("content")
 
-                # Get the highest non-footer order number (excluding current section)
-                highest_non_footer = (
-                    Section.objects.exclude(name="footer")
-                    .exclude(id=section.id)
-                    .aggregate(Max("order_number"))["order_number__max"]
-                    or 0
-                )
+                if section.is_active:
+                    # Get the highest non-footer order number (excluding current section)
+                    highest_non_footer = (
+                        Section.objects.exclude(name="footer")
+                        .exclude(id=section.id)
+                        .aggregate(Max("order_number"))["order_number__max"]
+                        or 0
+                    )
 
-                # Get footer section
-                footer_section = Section.objects.filter(name="footer").first()
+                    # Get footer section
+                    footer_section = Section.objects.filter(name="footer").first()
+                
+                # Handle services
+                services_data = json.loads(request.POST.get('services_data', '[]'))
+                
+                # Delete services that aren't in the new data
+                # Get existing service IDs
+                existing_service_ids = {
+                    service['id'] 
+                    for service in services_data 
+                    if service['id'] is not None
+                }
+                section.services.exclude(id__in=existing_service_ids).delete()
+
+                # Update or create services
+                for service_data in services_data:
+                    service_id = service_data.get('id')
+                    service_fields = {
+                        'order_number': service_data['order_number'],
+                        'name': service_data['name'],
+                        'icon': service_data['icon'],
+                        'description': service_data['description']
+                    }
+                    
+                    if service_id:
+                        # Update existing service
+                        section.services.filter(id=service_id).update(**service_fields)
+                    else:
+                        # Create new service
+                        section.services.create(**service_fields)
+                
+            
+            else:
+                # For other sections, update all fields
+                old_order_number = section.order_number
+                new_order_number = int(request.POST.get("order_number"))
+
+                section.is_active = request.POST.get("is_active") == "on"
+                section.name = request.POST.get("name")
+                section.label = request.POST.get("label")
+                section.order_number = new_order_number
+                section.content = request.POST.get("content")
+
+                if section.is_active:
+                    # Get the highest non-footer order number (excluding current section)
+                    highest_non_footer = (
+                        Section.objects.exclude(name="footer")
+                        .exclude(id=section.id)
+                        .aggregate(Max("order_number"))["order_number__max"]
+                        or 0
+                    )
+
+                    # Get footer section
+                    footer_section = Section.objects.filter(name="footer").first()
 
             section.last_edited_by = request.user
             section.last_edited_date = timezone.now()
             section.save()
 
             # Update footer section order after saving the current section
-            if section.name != "footer" and section.name != "intro" and footer_section:
+            if section.name != "footer" and section.name != "intro" and section.is_active and footer_section:
                 # If this section will have the highest order number among non-footer sections
                 if new_order_number >= highest_non_footer:
                     # Ensure footer has higher order number

@@ -47,10 +47,11 @@ class SocialMedia(models.Model):
 
 class Section(models.Model):
     id = models.AutoField(primary_key=True)
+    is_active = models.BooleanField(default=False)
     order_number = models.SmallIntegerField(null=False)
     name = models.CharField(max_length=30, null=False)
     label = models.CharField(max_length=10, null=False)
-    content = models.TextField(blank=True)
+    content = models.TextField()
     last_edited_by = models.ForeignKey(
         "auth.User", on_delete=models.CASCADE, related_name="edited_sections"
     )
@@ -67,3 +68,26 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.label})"
+    
+class Services(models.Model):
+    id = models.AutoField(primary_key=True)
+    section = models.ForeignKey(
+        Section, on_delete=models.CASCADE, related_name="services"
+    )
+    order_number = models.SmallIntegerField(null=False)
+    name = models.CharField(max_length=30, null=False)
+    icon = models.CharField(max_length=100000, null=False)
+    description = models.TextField()
+    
+    class Meta:
+        db_table = "services"
+        ordering = ["order_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["order_number"], name="unique_service_order"
+            )
+        ]
+        
+    def __str__(self):
+        return f"{self.name}"
+    
