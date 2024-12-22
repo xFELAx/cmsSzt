@@ -832,18 +832,12 @@
               // Combine into final structure
               const combinedContent = `
                   <div class="row section-header" data-num="${document.querySelector(`#order_number${sectionId}`).value}">
-                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">
-                          ${pretitle}
-                      </h3>
+                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">${pretitle}</h3>
                       <div class="column lg-6 stack-on-1100 section-header__primary">
-                          <h2 class="title text-display-1">
-                              ${primary}
-                          </h2>
+                          <h2 class="title text-display-1">${primary}</h2>
                       </div>
-                      <div class="column lg-6 stack-on-1100 section-header__secondary">
-                          <p class="desc">
-                              ${secondary}
-                          </p>
+                      <div class="column lg-6 stack-on-1100 section-header__secondary desc">
+                          ${secondary}
                       </div>
                   </div>
 
@@ -853,9 +847,7 @@
                               <div class="list-block__title">
                                   <h3 class="h5">${item.title}</h3>
                               </div>
-                              <div class="list-block__text">
-                                  ${item.content}
-                              </div>
+                              <div class="list-block__text">${item.content}</div>
                           </div>
                       `).join('')}
                   </div>
@@ -904,18 +896,12 @@
               // Combine into final structure
               const combinedContent = `
                   <div class="row section-header" data-num="${document.getElementById('order_number').value}">
-                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">
-                          ${pretitle}
-                      </h3>
+                      <h3 class="column lg-12 section-header__pretitle pretitle text-pretitle">${pretitle}</h3>
                       <div class="column lg-6 stack-on-1100 section-header__primary">
-                          <h2 class="title text-display-1">
-                              ${primary}
-                          </h2>
+                          <h2 class="title text-display-1">${primary}</h2>
                       </div>
                       <div class="column lg-6 stack-on-1100 section-header__secondary">
-                          <p class="desc">
-                              ${secondary}
-                          </p>
+                          <p class="desc">${secondary}</p>
                       </div>
                   </div>
 
