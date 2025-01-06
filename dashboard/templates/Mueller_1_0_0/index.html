@@ -478,67 +478,16 @@
               </div>
               <!-- end section-header -->
 
-              <div
-                class="row clients-list block-lg-one-fourth block-md-one-third block-tab-one-half block-stack"
-              >
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/snowflake.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img src="{% static 'images/clients/flash.svg' %}" alt="" />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img src="{% static 'images/clients/rise.svg' %}" alt="" />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/pinpoint.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/proline.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/vision.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/volume.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
-                <div class="column clients-list__item">
-                  <a href="#0">
-                    <img
-                      src="{% static 'images/clients/hitech.svg' %}"
-                      alt=""
-                    />
-                  </a>
-                </div>
+              <div class="row clients-list block-lg-one-fourth block-md-one-third block-tab-one-half block-stack">
+                {% for brand in brands %}
+                  <div class="column clients-list__item">
+                    <a>
+                      <svg viewBox="0 0 510 175" xmlns="http://www.w3.org/2000/svg">
+                        {{ brand.logo|safe }}
+                      </svg>
+                    </a>
+                  </div>
+                {% endfor %}
               </div>
               <!-- clients-list -->
             </div>

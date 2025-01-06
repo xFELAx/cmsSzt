@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Section, Services, Video, SocialMedia
+from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -21,14 +21,22 @@ from django.db.models import Max
 def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
 
+def get_active_brands():
+    return Brand.objects.filter(is_active=True).order_by("order_number")
+
+def get_active_works():
+    return Work.objects.filter(is_active=True).order_by("order_number")
+
 def home(request):
     sections = Section.objects.filter(is_active=True).order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
     social_medias = get_active_social_media()
+    brands = get_active_brands()
+    works = get_active_works()
     return render(
         request,
         "Mueller_1_0_0/index.html",
-        {"sections": sections, "video": video, "social_medias": social_medias},
+        {"sections": sections, "video": video, "social_medias": social_medias, "brands": brands, "works": works},
     )
 
 
@@ -489,3 +497,153 @@ class RegisterView(CreateView):
     def form_invalid(self, form):
         print("Registration failed:", form.errors)  # For debugging
         return super().form_invalid(form)
+
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ["name", "logo", "is_active", "order_number", "section"]
+
+        def clean_order_number(self):
+            order_number = self.cleaned_data.get("order_number")
+            if order_number is not None and order_number < 1:
+                raise forms.ValidationError("Order number must be greater than 0.")
+
+            # Exclude current instance when checking for duplicates during updates
+            if self.instance.pk:
+                if (
+                        Brand.objects.exclude(pk=self.instance.pk)
+                                .filter(order_number=order_number)
+                                .exists()
+                ):
+                    raise forms.ValidationError("This order number is already in use.")
+            else:
+                if Brand.objects.filter(order_number=order_number).exists():
+                    raise forms.ValidationError("This order number is already in use.")
+
+            return order_number
+
+@login_required
+def brand_page(request):
+    brands = Brand.objects.all().order_by("order_number")
+    form = BrandForm()
+    return render(request, "SEODash-main/src/html/brand-page.html", {"brands": brands, "form": form})
+
+@login_required
+def create_brand(request):
+    if request.method == "POST":
+        form = BrandForm(request.POST)
+        if form.is_valid():
+            brand = form.save(commit=False)
+            brand.last_edited_by = request.user
+            brand.last_edited_date = timezone.now()
+            brand.save()
+            messages.success(request, "Brand added successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+        return redirect("brand-page")
+
+@login_required
+def update_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    if request.method == "POST":
+        form = BrandForm(request.POST, instance=brand)
+        if form.is_valid():
+            brand = form.save(commit=False)
+            brand.last_edited_by = request.user
+            brand.last_edited_date = timezone.now()
+            brand.save()
+            messages.success(request, "Brand updated successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    return redirect("brand-page")
+
+@login_required
+def delete_brand(request, brand_id):
+    brand = get_object_or_404(Brand, id=brand_id)
+    try:
+        brand.delete()
+        messages.success(request, "Brand deleted successfully.")
+    except Exception as e:
+        messages.error(request, f"Error deleting brand: {str(e)}")
+    return redirect("brand-page")
+
+class WorkForm(forms.ModelForm):
+    class Meta:
+        model = Work
+        fields = ["name", "link", "tags", "description", "is_active", "order_number"]
+
+    def clean_order_number(self):
+        order_number = self.cleaned_data.get("order_number")
+        if order_number is not None and order_number < 1:
+            raise forms.ValidationError("Order number must be greater than 0.")
+
+        # Exclude current instance when checking for duplicates during updates
+        if self.instance.pk:
+            if (
+                    Work.objects.exclude(pk=self.instance.pk)
+                            .filter(order_number=order_number)
+                            .exists()
+            ):
+                raise forms.ValidationError("This order number is already in use.")
+        else:
+            if Work.objects.filter(order_number=order_number).exists():
+                raise forms.ValidationError("This order number is already in use.")
+
+        return order_number
+
+@login_required
+def work_page(request):
+    works = Work.objects.all().order_by("order_number")
+    form = WorkForm()
+    return render(request, "SEODash-main/src/html/work-page.html", {"works": works, "form": form})
+
+@login_required
+def create_work(request):
+    if request.method == "POST":
+        form = WorkForm(request.POST)
+        if form.is_valid():
+            work = form.save(commit=False)
+            work.last_edited_by = request.user
+            work.last_edited_date = timezone.now()
+            work.save()
+            messages.success(request, "Work added successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+        return redirect("work-page")
+
+@login_required
+def update_work(request, work_id):
+    work = get_object_or_404(Work, id=work_id)
+    if request.method == "POST":
+        form = WorkForm(request.POST, instance=work)
+        if form.is_valid():
+            work = form.save(commit=False)
+            work.last_edited_by = request.user
+            work.last_edited_date = timezone.now()
+            work.save()
+            messages.success(request, "Work updated successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    return redirect("work-page")
+
+@login_required
+def delete_work(request, work_id):
+    work = get_object_or_404(Work, id=work_id)
+    try:
+        work.delete()
+        messages.success(request, "Work deleted successfully.")
+    except Exception as e:
+        messages.error(request, f"Error deleting work: {str(e)}")
+    return redirect("work-page")

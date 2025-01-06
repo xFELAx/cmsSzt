@@ -90,4 +90,51 @@ class Services(models.Model):
         
     def __str__(self):
         return f"{self.name}"
-    
+
+class Brand(models.Model):
+    id = models.AutoField(primary_key=True)
+    is_active = models.BooleanField(default=True)
+    order_number = models.SmallIntegerField(null=False)
+    name = models.CharField(max_length=30, null=False)
+    logo = models.CharField(max_length=100000, null=False)
+    section = models.ForeignKey(Section, on_delete=models.SET_NULL, related_name="brands", null=True, blank=True)
+    last_edited_by = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="edited_brands")
+    last_edited_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "brands"
+        ordering = ["order_number"]
+        constraints = [models.UniqueConstraint(fields=['order_number'], name="unique_brand_order")]
+
+    def __str__(self):
+        return self.name
+
+class Work(models.Model):
+    id = models.AutoField(primary_key=True)
+    is_active = models.BooleanField(default=True)
+    order_number = models.SmallIntegerField(null=False)
+    name = models.CharField(max_length=30)
+    link = models.CharField(max_length=200)
+    tags = models.CharField(max_length=50)
+    description = models.TextField()
+    last_edited_by = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="edited_works")
+    last_edited_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "works"
+        ordering = ["order_number"]
+        constraints = [models.UniqueConstraint(fields=['order_number'], name="unique_work_order")]
+
+    def __str__(self):
+        return self.name
+
+class BrandWork(models.Model):
+    brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    work = models.ForeignKey(Work, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = "brands_works"
+        constraints = [models.UniqueConstraint(fields=['brand', 'work'], name='unique_brand_work')]
+
+    def __str__(self):
+        return self.brand.name + " " + self.work.name

@@ -54,8 +54,18 @@ urlpatterns = [
         views.delete_social_media,
         name="delete_social_media",
     ),
-    path('sections/', views.sections_page, name='sections-page'),
+    path('dashboard/sections/', views.sections_page, name='sections-page'),
     path('create-section/', views.create_section, name='create_section'),
     path('update-section/<int:section_id>/', views.update_section, name='update_section'),
     path('delete-section/<int:section_id>/', views.delete_section, name='delete_section'),
+
+    path("dashboard/brands/", views.brand_page, name="brand-page"),
+    path("create-brand/", views.create_brand, name="create_brand"),
+    path("update-brand/<int:brand_id>/", views.update_brand, name="update_brand"),
+    path("delete-brand/<int:brand_id>/", views.delete_brand, name="delete_brand"),
+
+    path("dashboard/works/", views.work_page, name="work-page"),
+    path("create-work/", views.create_work, name="create_work"),
+    path("update-work/<int:work_id>/", views.update_work, name="update_work"),
+    path("delete-work/<int:work_id>/", views.delete_work, name="delete_work"),
 ]
