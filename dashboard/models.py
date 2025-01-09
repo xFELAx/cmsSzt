@@ -50,7 +50,7 @@ class Section(models.Model):
     is_active = models.BooleanField(default=False)
     order_number = models.SmallIntegerField(null=False)
     name = models.CharField(max_length=30, null=False)
-    label = models.CharField(max_length=10, null=False)
+    label = models.CharField(max_length=20, null=False)
     content = models.TextField()
     last_edited_by = models.ForeignKey(
         "auth.User", on_delete=models.CASCADE, related_name="edited_sections"

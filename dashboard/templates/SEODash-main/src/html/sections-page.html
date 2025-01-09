@@ -352,7 +352,7 @@
                           </button>
                           
                           <!-- Delete button only shows for non-intro sections -->
-                          {% if section.name != 'intro' and section.name != 'footer' and section.name != 'services' %}
+                          {% if section.name != 'intro' and section.name != 'footer' and section.name != 'services' and section.name != 'folio' and section.name != 'testimonials' %}
                               <form
                                   method="post"
                                   action="{% url 'delete_section' section.id %}"
@@ -391,6 +391,22 @@
                                                 <label>Content</label>
                                                 <textarea class="tinymce-editor" name="content">{{ section.content }}</textarea>
                                             </div>
+                                        {% elif section.name == 'folio' or section.name == 'testimonials' %}
+                                            <input type="hidden" name="name" value="{{ section.name }}" />
+                                            <input type="hidden" name="label" value="{{ section.label }}" />
+                                            <input type="hidden" name="is_active" value="true" />
+                                            <input type="hidden" name="content" value="{{ section.content }}" />
+                                            <div class="form-group mb-3">
+                                              <label for="order_number{{ section.id }}">Order Number</label>
+                                              <input
+                                                  type="number"
+                                                  class="form-control"
+                                                  id="order_number{{ section.id }}"
+                                                  name="order_number"
+                                                  value="{{ section.order_number }}"
+                                                  required
+                                              />
+                                          </div>
                                         {% elif section.name == 'footer' %}
                                         <!-- For footer section -->
                                         <input type="hidden" name="order_number" value="{{ section.order_number }}" />
@@ -550,7 +566,7 @@
                                                   name="label"
                                                   value="{{ section.label }}"
                                                   required
-                                                  maxlength="10"
+                                                  maxlength="20"
                                               />
                                           </div>
                                           <div class="form-group mb-3">
@@ -632,7 +648,7 @@
                                             <button type="button" class="btn btn-primary" onclick="combineAndSubmitFooter({{ section.id }})">
                                                 Save changes
                                             </button>
-                                        {% elif section.name == 'intro' %}
+                                        {% elif section.name == 'intro' or section.name == 'folio' or section.name == 'testimonials' %}
                                             <button type="submit" class="btn btn-primary">
                                                 Save changes
                                             </button>
@@ -659,7 +675,6 @@
               {% endif %}
 
               <!-- Add New Section Button -->
-              {% if sections|length < 5 %}
               <button
                 type="button"
                 class="btn btn-primary mt-3"
@@ -668,7 +683,6 @@
               >
                 Add New Section
               </button>
-              {% endif %}
 
               <!-- Add New Section Modal -->
               <div class="modal fade" id="addNewModal" tabindex="-1" data-bs-focus="false">
@@ -691,7 +705,7 @@
                                   </div>
                                   <div class="form-group mb-3">
                                       <label for="label">Label</label>
-                                      <input type="text" class="form-control" id="label" name="label" required maxlength="10" />
+                                      <input type="text" class="form-control" id="label" name="label" required maxlength="20" />
                                   </div>
                                   <div class="form-group mb-3">
                                       <div class="form-check form-switch">
