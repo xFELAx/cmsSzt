@@ -255,60 +255,40 @@
         {% endif %}
 
         <div class="container-fluid">
-          <!-- Work List Section -->
+          <!-- Review List Section -->
           <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title fw-semibold">Works</h5>
-              <p class="text-muted mb-4">Manage your works here.</p>
+              <h5 class="card-title fw-semibold">Subscribers</h5>
+              <p class="text-muted mb-4">Manage your subscribers here.</p>
 
-              {% if works %}
+              {% if subscribers %}
               <div class="table-responsive">
                 <table class="table">
                   <thead>
                     <tr>
-                      <th>Order</th>
-                      <th>Work Name</th>
-                      <th>Link</th>
-                      <th>Tags</th>
-                      <th>Description</th>
-                      <th>Image Source</th>
-                      <th>Last Edited By</th>
-                      <th>Last Edited Date</th>
+                      <th>E-mail</th>
                       <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for work in works %}
+                    {% for subscriber in subscribers %}
                     <tr>
-                      <td>{{ work.order_number }}</td>
-                      <td>{{work.name}}</td>
-                      <td>{{work.link}}</td>
-                      <td>{{work.tags}}</td>
-                      <td>{{work.description}}</td>
-                      <td>{{work.img}}</td>
-                      <td>{{ work.last_edited_by.username }}</td>
-                      <td>{{ work.last_edited_date|date:"Y-m-d H:i" }}</td>
+                      <td>{{ subscriber.email }}</td>
                       <td>
-                        <form method="post" action="{% url 'update_work' work.id %}">
+                        <form method="post" action="{% url 'update_subscriber' subscriber.id %}">
                           {% csrf_token %}
-                          <input type="hidden" name="name" value="{{ work.name }}" />
-                          <input type="hidden" name="order_number" value="{{ work.order_number }}" />
-                          <input type="hidden" name="link" value="{{ work.link }}" />
-                          <input type="hidden" name="tags" value="{{ work.tags }}" />
-                          <input type="hidden" name="description" value="{{ work.description }}" />
-                          <input type="hidden" name="img" value="{{ work.img }}" />
-                          <input type="checkbox" name="is_active" {% if work.is_active %}checked{% endif %} style="display: none" />
-                          <button type="button" class="btn btn-sm {% if work.is_active %}btn-success{% else %}btn-secondary{% endif %}" onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()">
-                            {% if work.is_active %}Active{% else %}Inactive{% endif %}
+                          <input type="hidden" name="email" value="{{ subscriber.email }}" />
+                          <input type="checkbox" name="is_active" {% if subscriber.is_active %}checked{% endif %} style="display: none" />
+                          <button type="button" class="btn btn-sm {% if subscriber.is_active %}btn-success{% else %}btn-secondary{% endif %}" onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()">
+                            {% if subscriber.is_active %}Active{% else %}Inactive{% endif %}
                           </button>
                         </form>
-                      </td>
                       <td>
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ work.id }}">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ review.id }}">
                           Edit
                         </button>
-                        <form method="post" action="{% url 'delete_work' work.id %}" class="d-inline">
+                        <form method="post" action="{% url 'delete_subscriber' subscriber.id %}" class="d-inline">
                           {% csrf_token %}
                           <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
@@ -316,42 +296,22 @@
                     </tr>
 
                     <!-- Edit Modal -->
-                    <div class="modal fade" id="editModal{{ work.id }}" tabindex="-1">
+                    <div class="modal fade" id="editModal{{ review.id }}" tabindex="-1">
                       <div class="modal-dialog">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h5 class="modal-title">Edit Work</h5>
+                            <h5 class="modal-title">Edit Subscriber</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                           </div>
-                          <form method="post" action="{% url 'update_work' work.id %}">
+                          <form method="post" action="{% url 'update_subscriber' subscriber.id %}">
                             {% csrf_token %}
                             <div class="modal-body">
                               <div class="form-group mb-3">
-                                <label for="order_number{{ work.id }}">Order Number</label>
-                                <input type="number" class="form-control" id="order_number{{ work.id }}" name="order_number" value="{{ work.order_number }}" required min="1" max="20" />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="name{{ work.id }}">Work Name</label>
-                                <input type="text" class="form-control" id="name{{ work.id }}" name="name" value="{{ work.name }}" required />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="link{{ work.id }}">Link</label>
-                                <input type="text" class="form-control" id="link{{ work.id }}" name="link" value="{{ work.link}}" required />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="tags{{ work.id }}">Tags</label>
-                                <input type="text" class="form-control" id="tags{{ work.id }}" name="tags" value="{{ work.tags }}" required />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="description{{ work.id }}">Description</label>
-                                <input type="text" class="form-control" id="description{{ work.id }}" name="description" value="{{ work.description }}" required />
-                              </div>
-                              <div class="form-group mb-3">
-                                <label for="img{{ work.id }}">Image Source</label>
-                                <input type="text" class="form-control" id="img{{ work.id }}" name="img" value="{{ work.img }}" required />
+                                <label for="email{{ subscriber.id }}">E-mail</label>
+                                <input type="text" class="form-control" id="email{{ subscriber.id }}" name="email" value="{{ subscriber.email }}" required/>
                               </div>
                               <div class="mb-3 form-check">
-                              <input type="checkbox" class="form-check-input" id="is_active_edit" {% if work.is_active %}checked{% endif %} name="is_active" />
+                              <input type="checkbox" class="form-check-input" id="is_active_edit" {% if subscriber.is_active %}checked{% endif %} name="is_active" />
                               <label class="form-check-label" for="is_active">Is Active</label>
                             </div>
                             </div>
@@ -368,46 +328,26 @@
                 </table>
               </div>
               {% else %}
-              <p class="text-muted">No works available.</p>
+              <p class="text-muted">No subscribers available.</p>
               {% endif %}
             </div>
           </div>
 
-          <!-- Add New Work Form -->
+          <!-- Add New Subscriber Form -->
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title fw-semibold">Add New Work</h5>
-              <form method="post" action="{% url 'create_work' %}">
+              <h5 class="card-title fw-semibold">Add New Subscriber</h5>
+              <form method="post" action="{% url 'create_subscriber' %}">
                 {% csrf_token %}
                 <div class="mb-3">
-                  <label for="order_number" class="form-label">Order Number</label>
-                  <input type="number" class="form-control" id="order_number" name="order_number" required min="1" max="20" />
-                </div>
-                <div class="mb-3">
-                  <label for="name" class="form-label">Work Name</label>
-                  <input type="text" class="form-control" id="name" name="name" required />
-                </div>
-                <div class="mb-3">
-                  <label for="link" class="form-label">Link</label>
-                  <input class="form-control" id="link" name="link" required />
-                </div>
-                <div class="mb-3">
-                  <label for="tags" class="form-label">Tags</label>
-                  <input class="form-control" id="tags" name="tags"/>
-                </div>
-                <div class="mb-3">
-                  <label for="description" class="form-label">Description</label>
-                  <input class="form-control" id="description" name="description"/>
-                </div>
-                <div class="mb-3">
-                  <label for="img" class="form-label">Image Source</label>
-                  <input class="form-control" id="img" name="img"/>
+                  <label for="email" class="form-label">E-mail</label>
+                  <input type="text" class="form-control" id="email" name="email" required />
                 </div>
                 <div class="mb-3 form-check">
                   <input type="checkbox" class="form-check-input" id="is_active" name="is_active" />
                   <label class="form-check-label" for="is_active">Is Active</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Work</button>
+                <button type="submit" class="btn btn-primary">Add Subscriber</button>
               </form>
             </div>
           </div>

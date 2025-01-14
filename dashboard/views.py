@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork, Review
+from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork, Review, Subscriber
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -33,6 +33,12 @@ def get_active_works():
 def get_active_reviews():
     return Review.objects.filter(is_active=True).order_by("order_number")
 
+def get_active_subscribers():
+    return Subscriber.objects.filter(is_active=True).order_by("email")
+
+def get_all_subscribers():
+    return Subscriber.objects.all().order_by("email")
+
 def home(request):
     sections = Section.objects.filter(is_active=True).order_by("order_number")
     video = Video.objects.filter(is_active=True).first()
@@ -40,10 +46,11 @@ def home(request):
     brands = get_active_brands()
     works = get_active_works()
     reviews = get_active_reviews()
+    all_subscribers = get_all_subscribers()
     return render(
         request,
         "Mueller_1_0_0/index.html",
-        {"sections": sections, "video": video, "social_medias": social_medias, "brands": brands, "works": works, "reviews": reviews},
+        {"sections": sections, "video": video, "social_medias": social_medias, "brands": brands, "works": works, "reviews": reviews, "all-subscribers": all_subscribers},
     )
 
 
@@ -584,7 +591,7 @@ def delete_brand(request, brand_id):
 class WorkForm(forms.ModelForm):
     class Meta:
         model = Work
-        fields = ["name", "link", "tags", "description", "is_active", "order_number"]
+        fields = ["name", "link", "tags", "description", "is_active", "order_number", "img"]
 
     def clean_order_number(self):
         order_number = self.cleaned_data.get("order_number")
@@ -737,3 +744,87 @@ def delete_review(request, review_id):
     except Exception as e:
         messages.error(request, f"Error deleting review: {str(e)}")
     return redirect("review-page")
+
+
+class SubscriberForm(forms.ModelForm):
+    class Meta:
+        model = Subscriber
+        fields = ["is_active", "email"]
+
+    def clean_order_number(self):
+        email = self.cleaned_data.get("email")
+
+        # Exclude current instance when checking for duplicates during updates
+        if self.instance.pk:
+            if (
+                    Subscriber.objects.exclude(pk=self.instance.pk)
+                            .filter(email=email)
+                            .exists()
+            ):
+                raise forms.ValidationError("This email is already in use.")
+        else:
+            if Subscriber.objects.filter(email=email).exists():
+                raise forms.ValidationError("This email is already in use.")
+
+        return email
+
+@login_required
+def subscriber_page(request):
+    subscribers = Subscriber.objects.all().order_by("email")
+    form = SubscriberForm()
+    return render(request, "SEODash-main/src/html/subscriber-page.html", {"subscribers": subscribers, "form": form})
+
+@login_required
+def create_subscriber(request):
+    if request.method == "POST":
+        form = SubscriberForm(request.POST)
+        if form.is_valid():
+            subscriber = form.save(commit=False)
+            subscriber.save()
+            messages.success(request, "Subscriber added successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+        return redirect("subscriber-page")
+
+
+def subscribe(request):
+    if request.method == "POST":
+        form = SubscriberForm(request.POST)
+        if form.is_valid():
+            subscriber = form.save(commit=False)
+            subscriber.is_active = True
+            subscriber.save()
+            messages.success(request, "Thank you for subscribing!")
+        else:
+            messages.error(request, "Invalid email address.")
+        return redirect("home")
+
+
+@login_required
+def update_subscriber(request, subscriber_id):
+    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
+    if request.method == "POST":
+        form = SubscriberForm(request.POST, instance=subscriber)
+        if form.is_valid():
+            subscriber = form.save(commit=False)
+            subscriber.save()
+            messages.success(request, "Subscriber updated successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    return redirect("subscriber-page")
+
+@login_required
+def delete_subscriber(request, subscriber_id):
+    subscriber = get_object_or_404(Subscriber, id=subscriber_id)
+    try:
+        subscriber.delete()
+        messages.success(request, "Subscriber deleted successfully.")
+    except Exception as e:
+        messages.error(request, f"Error deleting subscriber: {str(e)}")
+    return redirect("subscriber-page")

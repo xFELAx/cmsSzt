@@ -72,5 +72,11 @@ urlpatterns = [
     path("dashboard/reviews/", views.review_page, name="review-page"),
     path("create-review/", views.create_review, name="create_review"),
     path("update-review/<int:review_id>/", views.update_review, name="update_review"),
-    path("delete-review/<int:review_id>/", views.delete_review, name="delete_review")
+    path("delete-review/<int:review_id>/", views.delete_review, name="delete_review"),
+
+    path("dashboard/subscribers/", views.subscriber_page, name="subscriber-page"),
+    path("create-subscriber/", views.create_subscriber, name="create_subscriber"),
+    path("update-subscriber/<int:subscriber_id>/", views.update_subscriber, name="update_subscriber"),
+    path("delete-subscriber/<int:subscriber_id>/", views.delete_subscriber, name="delete_subscriber"),
+    path("subscribe/", views.subscribe, name="subscribe")
 ]
