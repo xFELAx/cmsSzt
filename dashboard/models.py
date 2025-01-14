@@ -97,7 +97,7 @@ class Brand(models.Model):
     order_number = models.SmallIntegerField(null=False)
     name = models.CharField(max_length=30, null=False)
     logo = models.CharField(max_length=100000, null=False)
-    section = models.ForeignKey(Section, on_delete=models.SET_NULL, related_name="brands", null=True, blank=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name="brands")
     last_edited_by = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="edited_brands")
     last_edited_date = models.DateTimeField(auto_now=True)
 
@@ -138,3 +138,22 @@ class BrandWork(models.Model):
 
     def __str__(self):
         return self.brand.name + " " + self.work.name
+
+class Review(models.Model):
+    id = models.AutoField(primary_key=True)
+    is_active = models.BooleanField(default=True)
+    order_number = models.SmallIntegerField(null=False)
+    author_name = models.CharField(max_length=30)
+    author_surname = models.CharField(max_length=60)
+    brand_id = models.ForeignKey(Brand, on_delete=models.CASCADE)
+    content = models.TextField(null=False)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    last_edited_by = models.ForeignKey("auth.User", on_delete=models.CASCADE, related_name="edited_reviews")
+    last_edited_date = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "reviews"
+        constraints = [models.UniqueConstraint(fields=['order_number'], name="unique_review_order")]
+
+    def __str__(self):
+        return self.content

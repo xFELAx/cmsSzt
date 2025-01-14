@@ -68,4 +68,9 @@ urlpatterns = [
     path("create-work/", views.create_work, name="create_work"),
     path("update-work/<int:work_id>/", views.update_work, name="update_work"),
     path("delete-work/<int:work_id>/", views.delete_work, name="delete_work"),
+
+    path("dashboard/reviews/", views.review_page, name="review-page"),
+    path("create-review/", views.create_review, name="create_review"),
+    path("update-review/<int:review_id>/", views.update_review, name="update_review"),
+    path("delete-review/<int:review_id>/", views.delete_review, name="delete_review")
 ]

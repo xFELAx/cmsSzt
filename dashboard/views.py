@@ -7,7 +7,7 @@ from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
-from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork
+from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork, Review
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -21,11 +21,17 @@ from django.db.models import Max
 def get_active_social_media():
     return SocialMedia.objects.filter(is_active=True).order_by("order_number")
 
+
 def get_active_brands():
     return Brand.objects.filter(is_active=True).order_by("order_number")
 
+
 def get_active_works():
     return Work.objects.filter(is_active=True).order_by("order_number")
+
+
+def get_active_reviews():
+    return Review.objects.filter(is_active=True).order_by("order_number")
 
 def home(request):
     sections = Section.objects.filter(is_active=True).order_by("order_number")
@@ -33,10 +39,11 @@ def home(request):
     social_medias = get_active_social_media()
     brands = get_active_brands()
     works = get_active_works()
+    reviews = get_active_reviews()
     return render(
         request,
         "Mueller_1_0_0/index.html",
-        {"sections": sections, "video": video, "social_medias": social_medias, "brands": brands, "works": works},
+        {"sections": sections, "video": video, "social_medias": social_medias, "brands": brands, "works": works, "reviews": reviews},
     )
 
 
@@ -525,8 +532,9 @@ class BrandForm(forms.ModelForm):
 @login_required
 def brand_page(request):
     brands = Brand.objects.all().order_by("order_number")
+    sections = Section.objects.all().order_by("order_number")
     form = BrandForm()
-    return render(request, "SEODash-main/src/html/brand-page.html", {"brands": brands, "form": form})
+    return render(request, "SEODash-main/src/html/brand-page.html", {"brands": brands, "sections": sections, "form": form})
 
 @login_required
 def create_brand(request):
@@ -647,3 +655,85 @@ def delete_work(request, work_id):
     except Exception as e:
         messages.error(request, f"Error deleting work: {str(e)}")
     return redirect("work-page")
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ["author_name", "author_surname", "brand_id", "content", "section", "is_active", "order_number"]
+
+    def clean_order_number(self):
+        order_number = self.cleaned_data.get("order_number")
+        if order_number is not None and order_number < 1:
+            raise forms.ValidationError("Order number must be greater than 0.")
+
+        # Exclude current instance when checking for duplicates during updates
+        if self.instance.pk:
+            if (
+                    Review.objects.exclude(pk=self.instance.pk)
+                            .filter(order_number=order_number)
+                            .exists()
+            ):
+                raise forms.ValidationError("This order number is already in use.")
+        else:
+            if Review.objects.filter(order_number=order_number).exists():
+                raise forms.ValidationError("This order number is already in use.")
+
+        return order_number
+
+
+@login_required
+def review_page(request):
+    reviews = Review.objects.all().order_by("order_number")
+    sections = Section.objects.all().order_by("order_number")
+    brands = Brand.objects.all().order_by("order_number")
+    form = ReviewForm()
+    return render(request, "SEODash-main/src/html/review-page.html", {"reviews": reviews, "form": form, "sections": sections, "brands": brands})
+
+
+@login_required
+def create_review(request):
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.last_edited_by = request.user
+            review.last_edited_date = timezone.now()
+            review.save()
+            messages.success(request, "Review added successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+        return redirect("review-page")
+
+
+@login_required
+def update_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.method == "POST":
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.last_edited_by = request.user
+            review.last_edited_date = timezone.now()
+            review.save()
+            messages.success(request, "Review updated successfully.")
+        else:
+            messages.error(request, "Please correct the errors below.")
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    return redirect("review-page")
+
+
+@login_required
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    try:
+        review.delete()
+        messages.success(request, "Review deleted successfully.")
+    except Exception as e:
+        messages.error(request, f"Error deleting review: {str(e)}")
+    return redirect("review-page")

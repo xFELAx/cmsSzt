@@ -151,7 +151,7 @@
                   <span class="hide-menu">Works Page</span>
                 </a>
               </li>
-              <li class="sidebar-item">
+               <li class="sidebar-item">
                 <a
                   class="sidebar-link"
                   href="{% url 'review-page' %}"
@@ -239,20 +239,22 @@
         {% endif %}
 
         <div class="container-fluid">
-          <!-- Brand List Section -->
+          <!-- Review List Section -->
           <div class="card mb-4">
             <div class="card-body">
-              <h5 class="card-title fw-semibold">Brands</h5>
-              <p class="text-muted mb-4">Manage your brands here.</p>
+              <h5 class="card-title fw-semibold">Reviews</h5>
+              <p class="text-muted mb-4">Manage your reviews here.</p>
 
-              {% if brands %}
+              {% if reviews %}
               <div class="table-responsive">
                 <table class="table">
                   <thead>
                     <tr>
                       <th>Order</th>
+                      <th>Author Name</th>
+                      <th>Author Surname</th>
                       <th>Brand Name</th>
-                      <th>Logo SVG</th>
+                      <th>Content</th>
                       <th>Last Edited By</th>
                       <th>Last Edited Date</th>
                       <th>Section</th>
@@ -261,36 +263,35 @@
                     </tr>
                   </thead>
                   <tbody>
-                    {% for brand in brands %}
+                    {% for review in reviews %}
                     <tr>
-                      <td>{{ brand.order_number }}</td>
-                      <td>{{ brand.name }}</td>
+                      <td>{{ review.order_number }}</td>
+                      <td>{{ review.author_name }}</td>
+                      <td>{{ review.author_surname }}</td>
+                      <td>{{ review.brand_id }}</td>
+                      <td>{{ review.content|truncatechars:50  }}</td>
+                      <td>{{ review.last_edited_by.username }}</td>
+                      <td>{{ review.last_edited_date|date:"Y-m-d H:i" }}</td>
+                      <td>{{ review.section }}</td>
                       <td>
-                        <div style="max-width: 200px; overflow: hidden">
-                          {{ brand.logo|truncatechars:50 }}
-                        </div>
-                      </td>
-                      <td>{{ brand.last_edited_by.username }}</td>
-                      <td>{{ brand.last_edited_date|date:"Y-m-d H:i" }}</td>
-                      <td>{{ brand.section }}</td>
-                      <td>
-                        <form method="post" action="{% url 'update_brand' brand.id %}">
+                        <form method="post" action="{% url 'update_review' review.id %}">
                           {% csrf_token %}
-                          <input type="hidden" name="name" value="{{ brand.name }}" />
-                          <input type="hidden" name="order_number" value="{{ brand.order_number }}" />
-                          <input type="hidden" name="logo" value="{{ brand.logo }}" />
-                          <input type="hidden" name="section" value="{{ brand.section.id }}">
-                          <input type="checkbox" name="is_active" {% if brand.is_active %}checked{% endif %} style="display: none" />
-                          <button type="button" class="btn btn-sm {% if brand.is_active %}btn-success{% else %}btn-secondary{% endif %}" onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()">
-                            {% if brand.is_active %}Active{% else %}Inactive{% endif %}
+                          <input type="hidden" name="order_number" value="{{ review.order_number }}" />
+                          <input type="hidden" name="author_name" value="{{ review.author_name }}" />
+                          <input type="hidden" name="author_surname" value="{{ review.author_surname }}" />
+                          <input type="hidden" name="brand_id" value="{{ review.brand_id.id }}" />
+                          <input type="hidden" name="content" value="{{ review.content }}" />
+                          <input type="hidden" name="section" value="{{ review.section.id }}" />
+                          <input type="checkbox" name="is_active" {% if review.is_active %}checked{% endif %} style="display: none" />
+                          <button type="button" class="btn btn-sm {% if review.is_active %}btn-success{% else %}btn-secondary{% endif %}" onclick="this.previousElementSibling.checked = !this.previousElementSibling.checked; this.form.submit()">
+                            {% if review.is_active %}Active{% else %}Inactive{% endif %}
                           </button>
                         </form>
-                      </td>
                       <td>
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ brand.id }}">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ review.id }}">
                           Edit
                         </button>
-                        <form method="post" action="{% url 'delete_brand' brand.id %}" class="d-inline">
+                        <form method="post" action="{% url 'delete_review' review.id %}" class="d-inline">
                           {% csrf_token %}
                           <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
@@ -298,41 +299,56 @@
                     </tr>
 
                     <!-- Edit Modal -->
-                    <div class="modal fade" id="editModal{{ brand.id }}" tabindex="-1">
+                    <div class="modal fade" id="editModal{{ review.id }}" tabindex="-1">
                       <div class="modal-dialog">
                         <div class="modal-content">
                           <div class="modal-header">
-                            <h5 class="modal-title">Edit Brand</h5>
+                            <h5 class="modal-title">Edit Review</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                           </div>
-                          <form method="post" action="{% url 'update_brand' brand.id %}">
+                          <form method="post" action="{% url 'update_review' review.id %}">
                             {% csrf_token %}
                             <div class="modal-body">
                               <div class="form-group mb-3">
-                                <label for="order_number{{ brand.id }}">Order Number</label>
-                                <input type="number" class="form-control" id="order_number{{ brand.id }}" name="order_number" value="{{ brand.order_number }}" required min="1" />
+                                <label for="order_number{{ review.id }}">Order Number</label>
+                                <input type="number" class="form-control" id="order_number{{ review.id }}" name="order_number" value="{{ review.order_number }}" required min="1" />
                               </div>
                               <div class="form-group mb-3">
-                                <label for="name{{ brand.id }}">Brand Name</label>
-                                <input type="text" class="form-control" id="name{{ brand.id }}" name="name" value="{{ brand.name }}" required />
+                                <label for="author_name{{ review.id }}">Author Name</label>
+                                <input type="text" class="form-control" id="author_name{{ review.id }}" name="author_name" value="{{ review.author_name }}" required />
                               </div>
                               <div class="form-group mb-3">
-                                <label for="logo{{ brand.id }}">Logo SVG</label>
-                                <input type="text" class="form-control" id="logo{{ brand.id }}" name="logo" value="{{ brand.logo}}" required />
+                                <label for="author_surname{{ review.id }}">Author Surname</label>
+                                <input type="text" class="form-control" id="author_surname{{ review.id }}" name="author_surname" value="{{ review.author_surname}}" required />
                               </div>
                               <div class="form-group mb-3">
-                                <label for="section{{ brand.id }}">Section</label>
-                                <select class="form-control" id="section{{ brand.id }}" name="section" required>
+                                <label for="brand_id{{ review.id }}">Brand Name</label>
+                                <select class="form-control" id="brand_id{{ review.id }}" name="brand_id" required>
+                                  <option value="">-- Select a Brand --</option>
+                                  {% for brand in brands %}
+                                    <option value="{{ brand.id }}" {% if review.brand_id.id == brand.id %}selected{% endif %}>
+                                      {{ brand.name }}
+                                    </option>
+                                  {% endfor %}
+                                </select>
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="content{{ review.id }}">Content</label>
+                                <input type="text" class="form-control" id="content{{ review.id }}" name="content" value="{{ review.content}}" required />
+                              </div>
+                              <div class="form-group mb-3">
+                                <label for="section{{ review.id }}">Section</label>
+                                <select class="form-control" id="section{{ review.id }}" name="section" required>
                                   <option value="">-- Select a Section --</option>
                                   {% for section in sections %}
-                                    <option value="{{ section.id }}" {% if brand.section.id == section.id %}selected{% endif %}>
+                                    <option value="{{ section.id }}" {% if review.section.id == section.id %}selected{% endif %}>
                                       {{ section.name }}
                                     </option>
                                   {% endfor %}
                                 </select>
                               </div>
                               <div class="mb-3 form-check">
-                              <input type="checkbox" class="form-check-input" id="is_active_edit" {% if brand.is_active %}checked{% endif %} name="is_active" />
+                              <input type="checkbox" class="form-check-input" id="is_active_edit" {% if review.is_active %}checked{% endif %} name="is_active" />
                               <label class="form-check-label" for="is_active">Is Active</label>
                             </div>
                             </div>
@@ -349,28 +365,41 @@
                 </table>
               </div>
               {% else %}
-              <p class="text-muted">No brands available.</p>
+              <p class="text-muted">No reviews available.</p>
               {% endif %}
             </div>
           </div>
 
-          <!-- Add New Brand Form -->
+          <!-- Add New Review Form -->
           <div class="card">
             <div class="card-body">
-              <h5 class="card-title fw-semibold">Add New Brand</h5>
-              <form method="post" action="{% url 'create_brand' %}">
+              <h5 class="card-title fw-semibold">Add New Review</h5>
+              <form method="post" action="{% url 'create_review' %}">
                 {% csrf_token %}
                 <div class="mb-3">
                   <label for="order_number" class="form-label">Order Number</label>
                   <input type="number" class="form-control" id="order_number" name="order_number" required min="1" />
                 </div>
                 <div class="mb-3">
-                  <label for="name" class="form-label">Brand Name</label>
-                  <input type="text" class="form-control" id="name" name="name" required />
+                  <label for="author_name" class="form-label">Author Name</label>
+                  <input type="text" class="form-control" id="author_name" name="author_name" required />
                 </div>
                 <div class="mb-3">
-                  <label for="logo" class="form-label">Icon SVG</label>
-                  <input class="form-control" id="logo" name="logo" required />
+                  <label for="author_surname" class="form-label">Author Surname</label>
+                  <input type="text" class="form-control" id="author_surname" name="author_surname" required />
+                </div>
+                <div class="mb-3">
+                  <label for="brand_id" class="form-label">Brand Name</label>
+                  <select class="form-control" id="brand_id" name="brand_id" required>
+                    <option value="">-- Select a Brand --</option>
+                    {% for brand in brands %}
+                      <option value="{{ brand.id }}">{{ brand.name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="content" class="form-label">Content</label>
+                  <input class="form-control" id="content" name="content" required />
                 </div>
                 <div class="mb-3">
                   <label for="section" class="form-label">Section</label>
@@ -385,7 +414,7 @@
                   <input type="checkbox" class="form-check-input" id="is_active" name="is_active" />
                   <label class="form-check-label" for="is_active">Is Active</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Add Brand</button>
+                <button type="submit" class="btn btn-primary">Add Review</button>
               </form>
             </div>
           </div>
