@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .forms import RegisterForm
 from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWork, Review, Subscriber
+from django.core.mail import send_mail
+from django.conf import settings
+import datetime
 
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
@@ -828,3 +831,38 @@ def delete_subscriber(request, subscriber_id):
     except Exception as e:
         messages.error(request, f"Error deleting subscriber: {str(e)}")
     return redirect("subscriber-page")
+
+
+@login_required
+def send_newsletter_page(request):
+    subscribers = get_active_subscribers()
+    return render(request, "SEODash-main/src/html/send-newsletter-page.html", {"subscribers": subscribers})
+
+@login_required
+def send_newsletter(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        content = request.POST.get("content")
+        footer = request.POST.get("footer")
+
+        full_message = f"{content}\n\n{footer}"
+        now_str = datetime.datetime.now().strftime("%d/%b/%Y %H:%M:%S")
+
+        subscribers = get_active_subscribers()
+
+        if not subscribers:
+            messages.warning(request, "No active subscribers found.")
+            return redirect("newsletter-page")
+
+        for email in subscribers:
+            send_mail(
+                subject=title,
+                message=full_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            print(f"[{now_str}] SMTP [{email}] sent")
+
+        messages.success(request, "Newsletter has been sent successfully.")
+        return redirect("send-newsletter-page")

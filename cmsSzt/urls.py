@@ -78,5 +78,8 @@ urlpatterns = [
     path("create-subscriber/", views.create_subscriber, name="create_subscriber"),
     path("update-subscriber/<int:subscriber_id>/", views.update_subscriber, name="update_subscriber"),
     path("delete-subscriber/<int:subscriber_id>/", views.delete_subscriber, name="delete_subscriber"),
-    path("subscribe/", views.subscribe, name="subscribe")
+    path("subscribe/", views.subscribe, name="subscribe"),
+
+    path("dashboard/send_newsletter/", views.send_newsletter_page, name="send-newsletter-page"),
+    path("send_newsletter/", views.send_newsletter, name="send_newsletter")
 ]
