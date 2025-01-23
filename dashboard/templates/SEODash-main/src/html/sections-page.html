@@ -440,7 +440,7 @@
                                         {% elif section.name == 'folio' or section.name == 'testimonials' %}
                                             <input type="hidden" name="name" value="{{ section.name }}" />
                                             <input type="hidden" name="label" value="{{ section.label }}" />
-                                            <input type="hidden" name="is_active" value="true" />
+                                            <input type="hidden" name="is_active" value="on" />
                                             <input type="hidden" name="content" value="{{ section.content }}" />
                                             <div class="form-group mb-3">
                                               <label for="order_number{{ section.id }}">Order Number</label>
