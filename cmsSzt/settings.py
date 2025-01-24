@@ -37,8 +37,11 @@ EMAIL_HOST_USER = 'nie0odpowiadac0test@gmail.com'
 EMAIL_HOST_PASSWORD = 'tzen iqqn smby dtyg'
 DEFAULT_FROM_EMAIL = 'nie0odpowiadac0test@gmail.com'
 
-# Application definition
+# Image Uploading
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
+# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",

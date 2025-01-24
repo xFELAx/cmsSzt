@@ -4661,3 +4661,10 @@ img.u-pull-left {
         width  : var(--vspace-1_5);
     }
 }
+
+.image-fixed-size-work {
+  width: 339px;
+  height: 226px;
+  object-fit: cover;
+  object-position: center;
+}

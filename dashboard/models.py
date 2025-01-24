@@ -45,6 +45,7 @@ class SocialMedia(models.Model):
             ),
         ]
 
+
 class Section(models.Model):
     id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=False)
@@ -68,7 +69,8 @@ class Section(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.label})"
-    
+
+
 class Services(models.Model):
     id = models.AutoField(primary_key=True)
     section = models.ForeignKey(
@@ -91,6 +93,7 @@ class Services(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+
 class Brand(models.Model):
     id = models.AutoField(primary_key=True)
     is_active = models.BooleanField(default=True)
@@ -108,6 +111,7 @@ class Brand(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Work(models.Model):
     id = models.AutoField(primary_key=True)
@@ -129,6 +133,7 @@ class Work(models.Model):
     def __str__(self):
         return self.name
 
+
 class BrandWork(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     work = models.ForeignKey(Work, on_delete=models.CASCADE)
@@ -139,6 +144,7 @@ class BrandWork(models.Model):
 
     def __str__(self):
         return self.brand.name + " " + self.work.name
+
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
@@ -158,6 +164,7 @@ class Review(models.Model):
 
     def __str__(self):
         return self.content
+
 
 class Subscriber(models.Model):
     id = models.AutoField(primary_key=True)

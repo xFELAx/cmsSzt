@@ -4,6 +4,8 @@ from dashboard import views
 from dashboard.views import CustomLoginView
 from django.contrib.auth.views import LogoutView
 from dashboard.views import RegisterView
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -83,3 +85,6 @@ urlpatterns = [
     path("dashboard/send_newsletter/", views.send_newsletter_page, name="send-newsletter-page"),
     path("send_newsletter/", views.send_newsletter, name="send_newsletter")
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,4 +1,6 @@
 import json
+
+from PIL.Image import Resampling
 from django.shortcuts import render, redirect, get_object_or_404
 
 # Create your views here.
@@ -11,7 +13,9 @@ from .models import Section, Services, Video, SocialMedia, Brand, Work, BrandWor
 from django.core.mail import send_mail
 from django.conf import settings
 import datetime
-
+import os
+import uuid
+from PIL import Image
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
@@ -592,6 +596,8 @@ def delete_brand(request, brand_id):
     return redirect("brand-page")
 
 class WorkForm(forms.ModelForm):
+    image_file = forms.ImageField(required=False)
+    img = forms.CharField(required=False)
     class Meta:
         model = Work
         fields = ["name", "link", "tags", "description", "is_active", "order_number", "img"]
@@ -624,11 +630,29 @@ def work_page(request):
 @login_required
 def create_work(request):
     if request.method == "POST":
-        form = WorkForm(request.POST)
+        # Pass both POST and FILES to the form
+        form = WorkForm(request.POST, request.FILES)
         if form.is_valid():
             work = form.save(commit=False)
             work.last_edited_by = request.user
             work.last_edited_date = timezone.now()
+
+            file = request.FILES.get("image_file")
+            if file:
+                image = Image.open(file)
+                image = image.resize((339, 226), Resampling.LANCZOS)
+                ext = os.path.splitext(file.name)[1]
+                filename = f"{uuid.uuid4()}{ext}"
+                upload_path = os.path.join("works_images", filename)
+                upload_path = upload_path.replace("\\", "/")
+                full_path = os.path.join(settings.MEDIA_ROOT, upload_path)
+
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+                image.save(full_path, format="JPEG")
+
+                work.img = upload_path
+
             work.save()
             messages.success(request, "Work added successfully.")
         else:
@@ -636,17 +660,45 @@ def create_work(request):
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
+
         return redirect("work-page")
+
 
 @login_required
 def update_work(request, work_id):
     work = get_object_or_404(Work, id=work_id)
+
     if request.method == "POST":
-        form = WorkForm(request.POST, instance=work)
+        form = WorkForm(request.POST, request.FILES, instance=work)
         if form.is_valid():
+            old_img_path = work.img
+
             work = form.save(commit=False)
             work.last_edited_by = request.user
             work.last_edited_date = timezone.now()
+
+            file = request.FILES.get("image_file")
+            if file:
+                if old_img_path:
+                    full_old_path = os.path.join(settings.MEDIA_ROOT, old_img_path)
+                    if os.path.exists(full_old_path):
+                        os.remove(full_old_path)
+
+                image = Image.open(file)
+                image = image.resize((339, 226), Resampling.LANCZOS)
+
+                ext = os.path.splitext(file.name)[1]
+                filename = f"{uuid.uuid4()}{ext}"
+                upload_path = os.path.join("works_images", filename)
+                upload_path = upload_path.replace("\\", "/")
+                full_path = os.path.join(settings.MEDIA_ROOT, upload_path)
+
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+                image.save(full_path, format="JPEG")
+
+                work.img = upload_path
+
             work.save()
             messages.success(request, "Work updated successfully.")
         else:
@@ -654,12 +706,19 @@ def update_work(request, work_id):
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
+
     return redirect("work-page")
+
 
 @login_required
 def delete_work(request, work_id):
     work = get_object_or_404(Work, id=work_id)
     try:
+        if work.img:
+            full_path = os.path.join(settings.MEDIA_ROOT, work.img)
+            if os.path.exists(full_path):
+                os.remove(full_path)
+
         work.delete()
         messages.success(request, "Work deleted successfully.")
     except Exception as e:
