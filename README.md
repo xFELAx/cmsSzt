@@ -49,5 +49,5 @@
 
 ## Accessing the Application
 
-*   **Main Website:** [http://127.0.0.1:8000/](http://127.0.0.1:8000/)
-*   **Administrator Panel:** [http://127.0.0.1:8000/dashboard/](http://127.0.0.1:8000/dashboard/)
+*   **Main Website:** [http://localhost:8000/](http://localhost:8000/)
+*   **Administrator Panel:** [http://localhost:8000/dashboard/](http://localhost:8000/dashboard/)
