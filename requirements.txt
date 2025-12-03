@@ -1,7 +1,7 @@
 asgiref==3.8.1
 beautifulsoup4==4.13.3
 bs4==0.0.2
-Django==5.2
+Django==5.2.9
 pillow==11.3.0
 soupsieve==2.6
 sqlparse==0.5.3
